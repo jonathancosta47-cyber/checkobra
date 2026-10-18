@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import { exportElementToPdf } from "@/lib/pdf";
 import { deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
 
@@ -57,7 +58,7 @@ function OrderView() {
       <article ref={docRef} className="panel space-y-6">
         {company && (company.logo || company.name) && (
           <div className="flex items-center gap-4">
-            {company.logo && <img src={company.logo} alt="Logotipo" className="h-16 w-auto max-w-40 object-contain" />}
+            {company.logo && <CompanyLogo src={company.logo} />}
             <div>
               {company.name && <p className="font-display text-lg font-bold">{company.name}</p>}
               {company.info && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{company.info}</p>}
