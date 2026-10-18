@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NovaRouteImport } from './routes/nova'
+import { Route as OrdemIdRouteImport } from './routes/ordem.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NovaRoute = NovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdemIdRoute = OrdemIdRouteImport.update({
+  id: '/ordem/$id',
+  path: '/ordem/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/nova': typeof NovaRoute
+  '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/nova': typeof NovaRoute
+  '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/nova': typeof NovaRoute
+  '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/nova' | '/ordem/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/nova' | '/ordem/$id'
+  id: '__root__' | '/' | '/nova' | '/ordem/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NovaRoute: typeof NovaRoute
+  OrdemIdRoute: typeof OrdemIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nova': {
+      id: '/nova'
+      path: '/nova'
+      fullPath: '/nova'
+      preLoaderRoute: typeof NovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ordem/$id': {
+      id: '/ordem/$id'
+      path: '/ordem/$id'
+      fullPath: '/ordem/$id'
+      preLoaderRoute: typeof OrdemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NovaRoute: NovaRoute,
+  OrdemIdRoute: OrdemIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
