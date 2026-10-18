@@ -4,7 +4,7 @@ import { SignaturePad } from "@/components/SignaturePad";
 import { compressImage, getOrder, nextNumber, saveOrder, type ServiceOrder } from "@/lib/orders";
 
 export const Route = createFileRoute("/nova")({
-  validateSearch: (s: Record<string, unknown>) => ({ id: typeof s.id === "string" ? s.id : undefined }),
+  validateSearch: (s: Record<string, unknown>): { id?: string } => (typeof s["id"] === "string" ? { id: s["id"] } : {}),
   head: () => ({
     meta: [
       { title: "Nova Ordem de Serviço" },
