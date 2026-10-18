@@ -50,7 +50,7 @@ export const statusLabel: Record<OrderStatus, string> = {
   concluida: "Concluída",
 };
 
-export function compressImage(file: File, max = 1200): Promise<string> {
+export function compressImage(file: File, max = 1200, type = "image/jpeg"): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -61,7 +61,7 @@ export function compressImage(file: File, max = 1200): Promise<string> {
         c.width = img.width * scale;
         c.height = img.height * scale;
         c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL("image/jpeg", 0.7));
+        resolve(c.toDataURL(type, 0.7));
       };
       img.onerror = reject;
       img.src = reader.result as string;
@@ -70,3 +70,10 @@ export function compressImage(file: File, max = 1200): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+export interface Company { name: string; logo: string | null; info: string }
+const CKEY = "os-manutencao:company";
+export function loadCompany(): Company {
+  try { return { name: "", logo: null, info: "", ...JSON.parse(localStorage.getItem(CKEY) || "{}") }; } catch { return { name: "", logo: null, info: "" }; }
+}
+export function saveCompany(c: Company) { localStorage.setItem(CKEY, JSON.stringify(c)); }
