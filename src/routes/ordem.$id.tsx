@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { exportElementToPdf } from "@/lib/pdf";
 import { deleteOrder, getOrder, statusLabel, type ServiceOrder } from "@/lib/orders";
 
 export const Route = createFileRoute("/ordem/$id")({
@@ -29,6 +30,8 @@ function OrderView() {
   const nav = useNavigate();
   const [o, setO] = useState<ServiceOrder | null | undefined>(undefined);
   useEffect(() => setO(getOrder(id) ?? null), [id]);
+  const docRef = useRef<HTMLElement>(null);
+  const [busy, setBusy] = useState(false);
 
   if (o === undefined) return null;
   if (o === null)
@@ -45,10 +48,11 @@ function OrderView() {
         <Link to="/" className="mr-auto text-sm text-muted-foreground">← Voltar</Link>
         <Link to="/nova" search={{ id: o.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta OS?")) { deleteOrder(o.id); nav({ to: "/" }); } }}>Excluir</button>
-        <button className="btn-primary" onClick={() => window.print()}>Imprimir / PDF</button>
+        <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
+        <button className="btn-primary" disabled={busy} onClick={async () => { setBusy(true); try { await exportElementToPdf(docRef.current!, `OS-${String(o.number).padStart(4, "0")}.pdf`); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>
 
-      <article className="panel space-y-6">
+      <article ref={docRef} className="panel space-y-6">
         <header className="flex items-start justify-between border-b border-border pb-4">
           <div>
             <p className="eyebrow">Ordem de Serviço</p>
