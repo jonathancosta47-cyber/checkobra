@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { exportElementToPdf } from "@/lib/pdf";
-import { deleteOrder, getOrder, statusLabel, type ServiceOrder } from "@/lib/orders";
+import { deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
 
 export const Route = createFileRoute("/ordem/$id")({
   head: () => ({
@@ -30,6 +30,8 @@ function OrderView() {
   const nav = useNavigate();
   const [o, setO] = useState<ServiceOrder | null | undefined>(undefined);
   useEffect(() => setO(getOrder(id) ?? null), [id]);
+  const [company, setCompany] = useState<Company | null>(null);
+  useEffect(() => setCompany(loadCompany()), []);
   const docRef = useRef<HTMLElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -53,6 +55,15 @@ function OrderView() {
       </div>
 
       <article ref={docRef} className="panel space-y-6">
+        {company && (company.logo || company.name) && (
+          <div className="flex items-center gap-4">
+            {company.logo && <img src={company.logo} alt="Logotipo" className="h-16 w-auto max-w-40 object-contain" />}
+            <div>
+              {company.name && <p className="font-display text-lg font-bold">{company.name}</p>}
+              {company.info && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{company.info}</p>}
+            </div>
+          </div>
+        )}
         <header className="flex items-start justify-between border-b border-border pb-4">
           <div>
             <p className="eyebrow">Ordem de Serviço</p>

@@ -24,9 +24,12 @@ function Index() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 pb-28 pt-8">
-      <header className="mb-6">
-        <p className="eyebrow">Manutenção</p>
-        <h1 className="font-display text-4xl font-bold">Ordens de Serviço</h1>
+      <header className="mb-6 flex items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">Manutenção</p>
+          <h1 className="font-display text-4xl font-bold">Ordens de Serviço</h1>
+        </div>
+        <Link to="/empresa" className="btn-ghost">Minha empresa</Link>
       </header>
       <input className="field mb-5" placeholder="Buscar por nº, cliente ou equipamento" value={q} onChange={(e) => setQ(e.target.value)} />
       {list.length === 0 ? (
