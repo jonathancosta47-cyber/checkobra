@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as OrdemIdRouteImport } from './routes/ordem.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpresaRoute = EmpresaRouteImport.update({
+  id: '/empresa',
+  path: '/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NovaRoute = NovaRouteImport.update({
@@ -31,30 +37,34 @@ const OrdemIdRoute = OrdemIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/ordem/$id': typeof OrdemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/nova' | '/ordem/$id'
+  fullPaths: '/' | '/empresa' | '/nova' | '/ordem/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/nova' | '/ordem/$id'
-  id: '__root__' | '/' | '/nova' | '/ordem/$id'
+  to: '/' | '/empresa' | '/nova' | '/ordem/$id'
+  id: '__root__' | '/' | '/empresa' | '/nova' | '/ordem/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EmpresaRoute: typeof EmpresaRoute
   NovaRoute: typeof NovaRoute
   OrdemIdRoute: typeof OrdemIdRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empresa': {
+      id: '/empresa'
+      path: '/empresa'
+      fullPath: '/empresa'
+      preLoaderRoute: typeof EmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nova': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EmpresaRoute: EmpresaRoute,
   NovaRoute: NovaRoute,
   OrdemIdRoute: OrdemIdRoute,
 }
