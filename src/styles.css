@@ -132,6 +132,25 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+:root {
+  --background: oklch(0.97 0.006 85);
+  --foreground: oklch(0.2 0.02 260);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.68 0.18 50);
+  --primary-foreground: oklch(0.18 0.02 260);
+  --muted-foreground: oklch(0.5 0.02 260);
+  --border: oklch(0.88 0.01 85);
+  --success: oklch(0.6 0.14 155);
+  --info: oklch(0.6 0.13 240);
+}
+
+@theme inline {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
+  --color-success: var(--success);
+  --color-info: var(--info);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -140,5 +159,24 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
+}
+
+@layer components {
+  .panel { @apply rounded-xl border border-border bg-card p-4 sm:p-5; }
+  .eyebrow { @apply font-display text-xs font-bold uppercase tracking-[0.2em] text-primary; }
+  .field { @apply w-full rounded-md border border-border bg-background px-3 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/30; }
+  .btn-primary { @apply inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-display font-bold text-primary-foreground transition active:scale-95; }
+  .btn-ghost { @apply inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold; }
+  .badge { @apply shrink-0 rounded-full px-3 py-1 text-xs font-bold; }
+  .badge-aberta { @apply bg-primary/15 text-primary; }
+  .badge-em_andamento { @apply bg-info/15 text-info; }
+  .badge-concluida { @apply bg-success/15 text-success; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .panel { border: none; }
 }
