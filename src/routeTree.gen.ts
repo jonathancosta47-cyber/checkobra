@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as NovaRouteImport } from './routes/nova'
+import { Route as FvsIndexRouteImport } from './routes/fvs.index'
+import { Route as FvsIdRouteImport } from './routes/fvs.$id'
+import { Route as FvsModelosRouteImport } from './routes/fvs.modelos'
+import { Route as FvsNovaRouteImport } from './routes/fvs.nova'
 import { Route as OrdemIdRouteImport } from './routes/ordem.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +33,26 @@ const NovaRoute = NovaRouteImport.update({
   path: '/nova',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FvsIndexRoute = FvsIndexRouteImport.update({
+  id: '/fvs/',
+  path: '/fvs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FvsIdRoute = FvsIdRouteImport.update({
+  id: '/fvs/$id',
+  path: '/fvs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FvsModelosRoute = FvsModelosRouteImport.update({
+  id: '/fvs/modelos',
+  path: '/fvs/modelos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FvsNovaRoute = FvsNovaRouteImport.update({
+  id: '/fvs/nova',
+  path: '/fvs/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdemIdRoute = OrdemIdRouteImport.update({
   id: '/ordem/$id',
   path: '/ordem/$id',
@@ -39,34 +63,75 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/fvs/$id': typeof FvsIdRoute
+  '/fvs/modelos': typeof FvsModelosRoute
+  '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/fvs/': typeof FvsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/fvs/$id': typeof FvsIdRoute
+  '/fvs/modelos': typeof FvsModelosRoute
+  '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/fvs': typeof FvsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/fvs/$id': typeof FvsIdRoute
+  '/fvs/modelos': typeof FvsModelosRoute
+  '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/fvs/': typeof FvsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/empresa' | '/nova' | '/ordem/$id'
+  fullPaths:
+    | '/'
+    | '/empresa'
+    | '/nova'
+    | '/fvs/$id'
+    | '/fvs/modelos'
+    | '/fvs/nova'
+    | '/ordem/$id'
+    | '/fvs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/empresa' | '/nova' | '/ordem/$id'
-  id: '__root__' | '/' | '/empresa' | '/nova' | '/ordem/$id'
+  to:
+    | '/'
+    | '/empresa'
+    | '/nova'
+    | '/fvs/$id'
+    | '/fvs/modelos'
+    | '/fvs/nova'
+    | '/ordem/$id'
+    | '/fvs'
+  id:
+    | '__root__'
+    | '/'
+    | '/empresa'
+    | '/nova'
+    | '/fvs/$id'
+    | '/fvs/modelos'
+    | '/fvs/nova'
+    | '/ordem/$id'
+    | '/fvs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmpresaRoute: typeof EmpresaRoute
   NovaRoute: typeof NovaRoute
+  FvsIdRoute: typeof FvsIdRoute
+  FvsModelosRoute: typeof FvsModelosRoute
+  FvsNovaRoute: typeof FvsNovaRoute
   OrdemIdRoute: typeof OrdemIdRoute
+  FvsIndexRoute: typeof FvsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +157,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NovaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fvs/': {
+      id: '/fvs/'
+      path: '/fvs'
+      fullPath: '/fvs/'
+      preLoaderRoute: typeof FvsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fvs/$id': {
+      id: '/fvs/$id'
+      path: '/fvs/$id'
+      fullPath: '/fvs/$id'
+      preLoaderRoute: typeof FvsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fvs/modelos': {
+      id: '/fvs/modelos'
+      path: '/fvs/modelos'
+      fullPath: '/fvs/modelos'
+      preLoaderRoute: typeof FvsModelosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fvs/nova': {
+      id: '/fvs/nova'
+      path: '/fvs/nova'
+      fullPath: '/fvs/nova'
+      preLoaderRoute: typeof FvsNovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ordem/$id': {
       id: '/ordem/$id'
       path: '/ordem/$id'
@@ -106,7 +199,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmpresaRoute: EmpresaRoute,
   NovaRoute: NovaRoute,
+  FvsIdRoute: FvsIdRoute,
+  FvsModelosRoute: FvsModelosRoute,
+  FvsNovaRoute: FvsNovaRoute,
   OrdemIdRoute: OrdemIdRoute,
+  FvsIndexRoute: FvsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
