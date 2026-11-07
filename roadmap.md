@@ -4,3 +4,7 @@
 - [x] Save new inspections securely in Cloud with sign-in; preserve existing OS and FVS.
 - [x] Add three signatures, copy result and blue PDF/print report.
 - [x] Verify save/edit/readback and PDF on desktop and mobile.
+
+# Intact report pagination
+- [x] Keep photo rows and signatures intact in all PDF/print reports.
+- [x] Test safe page boundaries and verify downloaded PDFs and native printing (OS and FVS; 15 intact photos and one intact signature each).

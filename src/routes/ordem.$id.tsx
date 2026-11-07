@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
 import { deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
 
@@ -54,7 +55,7 @@ function OrderView() {
         <Link to="/nova" search={{ id: o.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta OS?")) { deleteOrder(o.id); nav({ to: "/" }); } }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
-        <button className="btn-primary" disabled={busy} onClick={async () => { setBusy(true); try { await exportElementToPdf(docRef.current!, `OS-${String(o.number).padStart(4, "0")}.pdf`); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
+        <button className="btn-primary" disabled={busy} onClick={async () => { if (!docRef.current) return; setBusy(true); try { await exportElementToPdf(docRef.current, `OS-${String(o.number).padStart(4, "0")}.pdf`); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>
 
       <article ref={docRef} className="panel space-y-6">
@@ -103,15 +104,11 @@ function OrderView() {
         {o.photos.length > 0 && (
           <section>
             <h2 className="report-section-title">Fotos</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {o.photos.map((p, i) => (
-                <img key={i} src={p} alt={`Foto ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />
-              ))}
-            </div>
+            <ReportPhotos photos={o.photos} />
           </section>
         )}
 
-        <section className="border-t border-border pt-4">
+        <section className="border-t border-border pt-4" data-pdf-block>
           <h2 className="report-section-title">Recebimento</h2>
           {o.signature ? (
             <img src={o.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" />

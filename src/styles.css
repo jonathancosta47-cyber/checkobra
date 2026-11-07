@@ -188,7 +188,7 @@
 }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .delivery-report { overflow-wrap: anywhere; font-family: var(--font-sans); }
-.delivery-report [data-pdf-block] { break-inside: avoid; }
+[data-pdf-block] { break-inside: avoid; page-break-inside: avoid; }
 .google-signin { background: oklch(1 0 0); border-color: oklch(0.56 0.005 120); color: oklch(0.25 0.005 120); }
 @media print {
   .no-print { display: none !important; }
@@ -196,4 +196,6 @@
   .panel { border: none; }
   .delivery-report { padding: 0; }
   .delivery-report thead { display: table-header-group; }
+  article img, article tr { break-inside: avoid; page-break-inside: avoid; }
+  .report-section-title { break-after: avoid; page-break-after: avoid; }
 }
