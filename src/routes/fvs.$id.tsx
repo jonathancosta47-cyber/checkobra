@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Check, X, Minus } from "lucide-react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
 import { loadCompany, type Company } from "@/lib/orders";

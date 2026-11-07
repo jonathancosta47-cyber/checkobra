@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { DeliveryEvaluation } from "./DeliveryEvaluation";
 import { documentLabels, issuesOf, pendingCount, type Delivery } from "@/lib/delivery";
