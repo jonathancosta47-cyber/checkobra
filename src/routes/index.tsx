@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Crie ordens de serviço de manutenção com fotos, dados do cliente e assinatura." },
       { property: "og:title", content: "CheckObra — Ordens de Serviço e FVS" },
       { property: "og:description", content: "Gerador de ordens de serviço com fotos e assinatura digital." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Index,
@@ -24,12 +26,13 @@ function Index() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 pb-28 pt-8">
-      <header className="mb-6 flex items-end justify-between gap-3">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="eyebrow">CheckObra</p>
           <h1 className="font-display text-4xl font-bold">Ordens de Serviço</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link to="/entregas" className="btn-ghost">Entrega de apartamentos</Link>
           <Link to="/fvs" className="btn-ghost">Vistorias FVS</Link>
           <Link to="/empresa" className="btn-ghost">Minha empresa</Link>
         </div>

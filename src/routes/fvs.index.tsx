@@ -26,6 +26,7 @@ function FvsList() {
         <div><p className="eyebrow">Obras</p><h1 className="font-display text-4xl font-bold">Vistorias FVS</h1></div>
         <div className="flex flex-wrap justify-end gap-2"><Link to="/empreiteiros" className="btn-ghost">Empreiteiros</Link><Link to="/fvs/modelos" className="btn-ghost">Modelos de FVS</Link></div>
       </header>
+      <Link to="/entregas" className="btn-ghost mb-5">Entrega de apartamentos →</Link>
       {list.length === 0 ? (
         <div className="panel text-center text-muted-foreground">
           <p className="font-display text-lg text-foreground">Nenhuma vistoria ainda</p>
