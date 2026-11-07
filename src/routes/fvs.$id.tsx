@@ -58,7 +58,7 @@ function FvsView() {
         <header className="report-head">
           <p className="eyebrow">Ficha de Verificação de Serviço</p>
           <h1 className="font-display text-3xl font-bold">#{num} — {f.templateName}</h1>
-          <p className="text-sm text-muted-foreground">{new Date(f.createdAt).toLocaleString("pt-BR")}</p>
+          <p className="text-sm opacity-80">{new Date(f.createdAt).toLocaleString("pt-BR")}</p>
           <p className="mt-2 text-sm">Obra: {f.obra || "—"} · Local: {f.local || "—"} · Responsável: {f.responsavel || "—"}</p>
         </header>
 

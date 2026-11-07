@@ -69,7 +69,7 @@ function OrderView() {
           <div>
             <p className="eyebrow">Ordem de Serviço</p>
             <h1 className="font-display text-3xl font-bold">#{String(o.number).padStart(4, "0")}</h1>
-            <p className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString("pt-BR")}</p>
+            <p className="text-sm opacity-80">{new Date(o.createdAt).toLocaleString("pt-BR")}</p>
           </div>
           <span className={`badge badge-${o.status}`}>{statusLabel[o.status]}</span>
         </header>
