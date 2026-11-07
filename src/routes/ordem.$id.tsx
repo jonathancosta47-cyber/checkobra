@@ -55,7 +55,7 @@ function OrderView() {
         <Link to="/nova" search={{ id: o.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta OS?")) { deleteOrder(o.id); nav({ to: "/" }); } }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
-        <button className="btn-primary" disabled={busy} onClick={async () => { if (!docRef.current) return; setBusy(true); try { await exportElementToPdf(docRef.current, `OS-${String(o.number).padStart(4, "0")}.pdf`); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
+        <button className="btn-primary" disabled={busy} onClick={async () => { if (!docRef.current) return; setBusy(true); try { await exportElementToPdf(docRef.current, `OS-${String(o.number).padStart(4, "0")}.pdf`, o.client.address || o.client.name); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>
 
       <article ref={docRef} className="panel space-y-6">

@@ -1,6 +1,7 @@
+import { loadCompany } from "./orders";
 import { nextPdfPageEnd, type PdfBlock } from "./pdf-pagination";
 
-export async function exportElementToPdf(el: HTMLElement, filename: string) {
+export async function exportElementToPdf(el: HTMLElement, filename: string, work = "") {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import("html2canvas-pro"),
     import("jspdf"),
@@ -26,7 +27,8 @@ export async function exportElementToPdf(el: HTMLElement, filename: string) {
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 10;
   const imgW = pageW - margin * 2;
-  const usableH = pageH - margin * 2;
+  const footerH = 12;
+  const usableH = pageH - margin * 2 - footerH;
   const pxPerMm = canvas.width / imgW;
   const pagePx = Math.floor(usableH * pxPerMm);
   let offset = 0;
@@ -41,6 +43,21 @@ export async function exportElementToPdf(el: HTMLElement, filename: string) {
     if (offset > 0) pdf.addPage();
     pdf.addImage(slice.toDataURL("image/jpeg", 0.92), "JPEG", margin, margin, imgW, slice.height/pxPerMm);
     offset = end;
+  }
+  const company = loadCompany();
+  const companyLine = [company.name, company.info?.split("\n")[0]].filter(Boolean).join(" — ");
+  const total = pdf.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    pdf.setPage(i);
+    const y = pageH - margin - 6;
+    pdf.setDrawColor(139, 111, 78);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, y, pageW - margin, y);
+    pdf.setFontSize(8);
+    pdf.setTextColor(47, 74, 58);
+    if (companyLine) pdf.text(pdf.splitTextToSize(companyLine, imgW - 30)[0], margin, y + 4);
+    if (work) pdf.text(pdf.splitTextToSize(`Obra: ${work}`, imgW - 30)[0], margin, y + 8);
+    pdf.text(`Página ${i}/${total}`, pageW - margin, y + 4, { align: "right" });
   }
   pdf.save(filename);
 }
