@@ -5,24 +5,27 @@ export async function exportElementToPdf(el: HTMLElement, filename: string) {
   ]);
   await document.fonts?.ready;
   await Promise.all(Array.from(el.querySelectorAll("img")).map(img => img.decode().catch(() => undefined)));
+  let blocks: { top: number; bottom: number }[] = [];
   const canvas = await html2canvas(el, {
     scale: 2, backgroundColor: getComputedStyle(el).backgroundColor, useCORS: true, windowWidth: 800,
-    onclone: (_doc, cloned) => { cloned.style.width = "760px"; cloned.style.maxWidth = "none"; },
+    onclone: (_doc, cloned) => {
+      cloned.style.width = "760px";
+      cloned.style.maxWidth = "none";
+      const root = cloned.getBoundingClientRect();
+      blocks = Array.from(cloned.querySelectorAll("[data-pdf-block], tr, img")).map(node => {
+        const rect = node.getBoundingClientRect();
+        return { top: (rect.top-root.top)*2, bottom: (rect.bottom-root.top)*2 };
+      });
+    },
   });
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 10;
   const imgW = pageW - margin * 2;
-  const imgH = (canvas.height * imgW) / canvas.width;
   const usableH = pageH - margin * 2;
   const pxPerMm = canvas.width / imgW;
   const pagePx = Math.floor(usableH * pxPerMm);
-  const blocks = Array.from(el.querySelectorAll("[data-pdf-block], tr, img")).map(node => {
-    const rect = node.getBoundingClientRect();
-    const root = el.getBoundingClientRect();
-    return { top: (rect.top-root.top)/root.height*canvas.height, bottom: (rect.bottom-root.top)/root.height*canvas.height };
-  });
   let offset = 0;
   while (offset < canvas.height) {
     let end = Math.min(offset + pagePx, canvas.height);
