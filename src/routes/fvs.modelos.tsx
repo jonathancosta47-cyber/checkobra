@@ -46,7 +46,7 @@ function Templates() {
         ))}
         <button type="button" className="btn-ghost w-full" onClick={() => { setSaved(false); setList([...list, { id: crypto.randomUUID(), name: "", items: [""] }]); }}>+ Novo modelo de FVS</button>
         <button type="button" className="btn-primary w-full" onClick={() => {
-          saveTemplates(list.map((t) => ({ ...t, name: t.name.trim() || "Sem nome", ...(() => { const keep = t.items.map((x, k) => [x.trim(), (t.criteria?.[k] ?? "").trim()]).filter(([x]) => x); return { items: keep.map((x) => x[0]), criteria: keep.map((x) => x[1]) }; })() })));
+          saveTemplates(list.map((t) => ({ ...t, name: t.name.trim() || "Sem nome", ...(() => { const keep = t.items.map((x, k): [string, string] => [x.trim(), (t.criteria?.[k] ?? "").trim()]).filter(([x]) => x); return { items: keep.map((x) => x[0]), criteria: keep.map((x) => x[1]) }; })() })));
           setList(loadTemplates()); setSaved(true);
         }}>{saved ? "Salvo ✓" : "Salvar modelos"}</button>
       </div>
