@@ -71,7 +71,7 @@ export function compressImage(file: File, max = 1200, type = "image/jpeg"): Prom
   });
 }
 
-export interface Company { name: string; logo: string | null; logo2?: string | null; info: string }
+export interface Company { name: string; logo: string | null; logo2?: string | null; logo3?: string | null; info: string }
 const CKEY = "os-manutencao:company";
 export function loadCompany(): Company {
   try { return { name: "", logo: null, info: "", ...JSON.parse(localStorage.getItem(CKEY) || "{}") }; } catch { return { name: "", logo: null, info: "" }; }
