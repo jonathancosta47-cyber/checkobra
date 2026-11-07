@@ -178,7 +178,7 @@
 }
 
 @layer components {
-  .report-head { @apply -mx-6 -mt-6 rounded-t-md bg-primary px-6 py-4 text-primary-foreground; }
+  .report-head { @apply rounded-lg bg-primary px-5 py-4 text-primary-foreground; }
   .report-head .eyebrow, .report-head .text-muted-foreground, .report-head .text-primary { @apply text-primary-foreground; }
   .report-table thead tr { @apply bg-primary text-primary-foreground; }
   .report-table th { @apply px-2; }
