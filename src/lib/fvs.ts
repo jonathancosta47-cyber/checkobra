@@ -4,7 +4,7 @@ export interface FvsItem { text: string; result: FvsResult; note: string }
 export interface FvsInspection {
   id: string; number: number; createdAt: string; templateName: string;
   obra: string; local: string; responsavel: string; items: FvsItem[];
-  observations: string; executor?: string; unit?: string; quantity?: string; unitPrice?: string; photos: string[]; signature: string | null; signedBy: string;
+  observations: string; executor?: string; crew?: string; unit?: string; quantity?: string; unitPrice?: string; photos: string[]; signature: string | null; signedBy: string;
 }
 
 const TKEY = "os-manutencao:fvs-templates";
@@ -30,3 +30,15 @@ export const resultLabel = { C: "Conforme", NC: "Não conforme", NA: "Não se ap
 export const parseNum = (v?: string) => { const n = parseFloat((v || "").replace(/\./g, "").replace(",", ".")); return isNaN(n) ? 0 : n; };
 export const fvsTotal = (f: { quantity?: string; unitPrice?: string }) => parseNum(f.quantity) * parseNum(f.unitPrice);
 export const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export interface Contract { service: string; unit: string; unitPrice: string }
+export interface Contractor { id: string; name: string; contracts: Contract[] }
+const CKEY = "os-manutencao:empreiteiros";
+export const loadContractors = (): Contractor[] => read(CKEY, []);
+export const saveContractors = (c: Contractor[]) => localStorage.setItem(CKEY, JSON.stringify(c));
+/** Finds the contract price for a contractor name + service (template) name. */
+export function findContract(list: Contractor[], executor?: string, service?: string): Contract | undefined {
+  const norm = (x?: string) => (x || "").trim().toLowerCase();
+  const c = list.find((x) => norm(x.name) === norm(executor));
+  return c?.contracts.find((k) => norm(k.service) === norm(service));
+}

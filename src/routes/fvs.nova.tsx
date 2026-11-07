@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SignaturePad } from "@/components/SignaturePad";
 import { compressImage } from "@/lib/orders";
-import { getInspection, loadTemplates, nextFvsNumber, fvsTotal, brl, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
+import { getInspection, loadTemplates, nextFvsNumber, fvsTotal, brl, loadContractors, findContract, type Contractor, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
 
 export const Route = createFileRoute("/fvs/nova")({
   validateSearch: (s: Record<string, unknown>): { id?: string } => (typeof s["id"] === "string" ? { id: s["id"] } : {}),
@@ -26,15 +26,25 @@ function NewFvs() {
   const nav = useNavigate();
   const [templates, setTemplates] = useState<FvsTemplate[]>([]);
   const [f, setF] = useState<FvsInspection | null>(null);
+  const [contractors, setContractors] = useState<Contractor[]>([]);
 
   useEffect(() => {
     setTemplates(loadTemplates());
+    setContractors(loadContractors());
     const ex = id ? getInspection(id) : undefined;
     setF(ex ?? { id: crypto.randomUUID(), number: nextFvsNumber(), createdAt: new Date().toISOString(), templateName: "", obra: "", local: "", responsavel: "", items: [], observations: "", photos: [], signature: null, signedBy: "" });
   }, [id]);
 
   if (!f) return null;
-  const set = (p: Partial<FvsInspection>) => setF((c) => (c ? { ...c, ...p } : c));
+  const set = (p: Partial<FvsInspection>) => setF((c) => {
+    if (!c) return c;
+    const n = { ...c, ...p };
+    if ("executor" in p || "templateName" in p) {
+      const k = findContract(contractors, n.executor, n.templateName);
+      if (k) { n.unit = k.unit; n.unitPrice = k.unitPrice; }
+    }
+    return n;
+  });
   const pick = (tid: string) => {
     const t = templates.find((x) => x.id === tid);
     if (t) set({ templateName: t.name, items: t.items.map((text) => ({ text, result: null, note: "" })) });
@@ -68,7 +78,12 @@ function NewFvs() {
 
         <section className="panel space-y-3">
           <h2 className="eyebrow">Execução e medição</h2>
-          <input className="field" placeholder="Responsável pela execução (empreiteiro)" value={f.executor ?? ""} onChange={(e) => set({ executor: e.target.value })} />
+          <input className="field" list="empreiteiros" placeholder="Responsável pela execução (empreiteiro)" value={f.executor ?? ""} onChange={(e) => set({ executor: e.target.value })} />
+          <datalist id="empreiteiros">{contractors.map((c) => <option key={c.id} value={c.name} />)}</datalist>
+          {f.executor && f.templateName && (findContract(contractors, f.executor, f.templateName)
+            ? <p className="text-xs text-primary">Valores preenchidos pelo contrato do empreiteiro.</p>
+            : <p className="text-xs text-muted-foreground">Sem contrato para este serviço. <Link to="/empreiteiros" className="text-primary">Cadastrar empreiteiros →</Link></p>)}
+          <input className="field" inputMode="numeric" placeholder="Efetivo (nº de pessoas na atividade)" value={f.crew ?? ""} onChange={(e) => set({ crew: e.target.value })} />
           <div className="grid grid-cols-3 gap-3">
             <input className="field" placeholder="Unidade (m²)" value={f.unit ?? ""} onChange={(e) => set({ unit: e.target.value })} />
             <input className="field" inputMode="decimal" placeholder="Quantidade" value={f.quantity ?? ""} onChange={(e) => set({ quantity: e.target.value })} />
