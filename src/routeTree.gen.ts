@@ -13,6 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmpreiteirosRouteImport } from './routes/empreiteiros'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as NovaRouteImport } from './routes/nova'
+import { Route as EntregasIndexRouteImport } from './routes/entregas.index'
+import { Route as EntregasIdRouteImport } from './routes/entregas.$id'
+import { Route as EntregasNovaRouteImport } from './routes/entregas.nova'
+import { Route as EntregasSenhaRouteImport } from './routes/entregas.senha'
 import { Route as FvsIndexRouteImport } from './routes/fvs.index'
 import { Route as FvsIdRouteImport } from './routes/fvs.$id'
 import { Route as FvsModelosRouteImport } from './routes/fvs.modelos'
@@ -37,6 +41,26 @@ const EmpresaRoute = EmpresaRouteImport.update({
 const NovaRoute = NovaRouteImport.update({
   id: '/nova',
   path: '/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntregasIndexRoute = EntregasIndexRouteImport.update({
+  id: '/entregas/',
+  path: '/entregas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntregasIdRoute = EntregasIdRouteImport.update({
+  id: '/entregas/$id',
+  path: '/entregas/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntregasNovaRoute = EntregasNovaRouteImport.update({
+  id: '/entregas/nova',
+  path: '/entregas/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntregasSenhaRoute = EntregasSenhaRouteImport.update({
+  id: '/entregas/senha',
+  path: '/entregas/senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FvsIndexRoute = FvsIndexRouteImport.update({
@@ -70,10 +94,14 @@ export interface FileRoutesByFullPath {
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/entregas/$id': typeof EntregasIdRoute
+  '/entregas/nova': typeof EntregasNovaRoute
+  '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -81,10 +109,14 @@ export interface FileRoutesByTo {
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/entregas/$id': typeof EntregasIdRoute
+  '/entregas/nova': typeof EntregasNovaRoute
+  '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/entregas': typeof EntregasIndexRoute
   '/fvs': typeof FvsIndexRoute
 }
 export interface FileRoutesById {
@@ -93,10 +125,14 @@ export interface FileRoutesById {
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
+  '/entregas/$id': typeof EntregasIdRoute
+  '/entregas/nova': typeof EntregasNovaRoute
+  '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
 }
 export interface FileRouteTypes {
@@ -106,10 +142,14 @@ export interface FileRouteTypes {
     | '/empreiteiros'
     | '/empresa'
     | '/nova'
+    | '/entregas/$id'
+    | '/entregas/nova'
+    | '/entregas/senha'
     | '/fvs/$id'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/entregas/'
     | '/fvs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,10 +157,14 @@ export interface FileRouteTypes {
     | '/empreiteiros'
     | '/empresa'
     | '/nova'
+    | '/entregas/$id'
+    | '/entregas/nova'
+    | '/entregas/senha'
     | '/fvs/$id'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/entregas'
     | '/fvs'
   id:
     | '__root__'
@@ -128,10 +172,14 @@ export interface FileRouteTypes {
     | '/empreiteiros'
     | '/empresa'
     | '/nova'
+    | '/entregas/$id'
+    | '/entregas/nova'
+    | '/entregas/senha'
     | '/fvs/$id'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/entregas/'
     | '/fvs/'
   fileRoutesById: FileRoutesById
 }
@@ -140,10 +188,14 @@ export interface RootRouteChildren {
   EmpreiteirosRoute: typeof EmpreiteirosRoute
   EmpresaRoute: typeof EmpresaRoute
   NovaRoute: typeof NovaRoute
+  EntregasIdRoute: typeof EntregasIdRoute
+  EntregasNovaRoute: typeof EntregasNovaRoute
+  EntregasSenhaRoute: typeof EntregasSenhaRoute
   FvsIdRoute: typeof FvsIdRoute
   FvsModelosRoute: typeof FvsModelosRoute
   FvsNovaRoute: typeof FvsNovaRoute
   OrdemIdRoute: typeof OrdemIdRoute
+  EntregasIndexRoute: typeof EntregasIndexRoute
   FvsIndexRoute: typeof FvsIndexRoute
 }
 
@@ -175,6 +227,34 @@ declare module '@tanstack/react-router' {
       path: '/nova'
       fullPath: '/nova'
       preLoaderRoute: typeof NovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entregas/': {
+      id: '/entregas/'
+      path: '/entregas'
+      fullPath: '/entregas/'
+      preLoaderRoute: typeof EntregasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entregas/$id': {
+      id: '/entregas/$id'
+      path: '/entregas/$id'
+      fullPath: '/entregas/$id'
+      preLoaderRoute: typeof EntregasIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entregas/nova': {
+      id: '/entregas/nova'
+      path: '/entregas/nova'
+      fullPath: '/entregas/nova'
+      preLoaderRoute: typeof EntregasNovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entregas/senha': {
+      id: '/entregas/senha'
+      path: '/entregas/senha'
+      fullPath: '/entregas/senha'
+      preLoaderRoute: typeof EntregasSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fvs/': {
@@ -220,10 +300,14 @@ const rootRouteChildren: RootRouteChildren = {
   EmpreiteirosRoute: EmpreiteirosRoute,
   EmpresaRoute: EmpresaRoute,
   NovaRoute: NovaRoute,
+  EntregasIdRoute: EntregasIdRoute,
+  EntregasNovaRoute: EntregasNovaRoute,
+  EntregasSenhaRoute: EntregasSenhaRoute,
   FvsIdRoute: FvsIdRoute,
   FvsModelosRoute: FvsModelosRoute,
   FvsNovaRoute: FvsNovaRoute,
   OrdemIdRoute: OrdemIdRoute,
+  EntregasIndexRoute: EntregasIndexRoute,
   FvsIndexRoute: FvsIndexRoute,
 }
 export const routeTree = rootRouteImport
