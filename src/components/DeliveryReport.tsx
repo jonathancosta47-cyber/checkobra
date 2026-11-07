@@ -143,11 +143,11 @@ export const DeliveryReport = forwardRef<HTMLElement, { delivery: Delivery }>(
             <ReportPhotos photos={d.photos} label="Registro final" />
           </section>
         )}
-        <section>
-          <h2 className="report-section-title" data-pdf-block>
+        <section data-pdf-block className="pb-3">
+          <h2 className="report-section-title">
             Assinaturas
           </h2>
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-5 pb-2 sm:grid-cols-3">
             {d.signatures.map((s) => (
               <div key={s.role} data-pdf-block>
                 {s.image ? (

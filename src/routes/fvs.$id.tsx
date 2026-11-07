@@ -98,7 +98,7 @@ function FvsView() {
           </section>
         )}
 
-        <section className="border-t border-border pt-4" data-pdf-block>
+        <section className="border-t border-border pt-4 pb-3" data-pdf-block>
           <h2 className="report-section-title">Responsável</h2>
           {f.signature ? <img src={f.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" /> : <div className="h-24 max-w-sm" />}
           <div className="max-w-sm border-t border-foreground pt-1 text-sm">{f.signedBy || "Assinatura do responsável"}</div>

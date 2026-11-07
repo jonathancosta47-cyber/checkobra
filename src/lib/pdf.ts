@@ -14,10 +14,11 @@ export async function exportElementToPdf(el: HTMLElement, filename: string) {
       cloned.style.width = "760px";
       cloned.style.maxWidth = "none";
       const root = cloned.getBoundingClientRect();
-      blocks = Array.from(cloned.querySelectorAll("[data-pdf-block], tr, img")).map(node => {
+      // Blocks plus every text line container, padded so descenders are never cut.
+      blocks = Array.from(cloned.querySelectorAll("[data-pdf-block], tr, img, p, h1, h2, h3, li, dt, dd, label")).map(node => {
         const rect = node.getBoundingClientRect();
-        return { top: Math.floor((rect.top-root.top)*2), bottom: Math.ceil((rect.bottom-root.top)*2) };
-      });
+        return { top: Math.max(0, Math.floor((rect.top-root.top)*2) - 6), bottom: Math.ceil((rect.bottom-root.top)*2) + 10 };
+      }).filter(b => b.bottom > b.top);
     },
   });
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
