@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmpreiteirosRouteImport } from './routes/empreiteiros'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as FvsIndexRouteImport } from './routes/fvs.index'
@@ -21,6 +22,11 @@ import { Route as OrdemIdRouteImport } from './routes/ordem.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpreiteirosRoute = EmpreiteirosRouteImport.update({
+  id: '/empreiteiros',
+  path: '/empreiteiros',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpresaRoute = EmpresaRouteImport.update({
@@ -61,6 +67,7 @@ const OrdemIdRoute = OrdemIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/fvs/$id': typeof FvsIdRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/fvs/$id': typeof FvsIdRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/nova': typeof NovaRoute
   '/fvs/$id': typeof FvsIdRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/empreiteiros'
     | '/empresa'
     | '/nova'
     | '/fvs/$id'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/empreiteiros'
     | '/empresa'
     | '/nova'
     | '/fvs/$id'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/empreiteiros'
     | '/empresa'
     | '/nova'
     | '/fvs/$id'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EmpreiteirosRoute: typeof EmpreiteirosRoute
   EmpresaRoute: typeof EmpresaRoute
   NovaRoute: typeof NovaRoute
   FvsIdRoute: typeof FvsIdRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empreiteiros': {
+      id: '/empreiteiros'
+      path: '/empreiteiros'
+      fullPath: '/empreiteiros'
+      preLoaderRoute: typeof EmpreiteirosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empresa': {
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EmpreiteirosRoute: EmpreiteirosRoute,
   EmpresaRoute: EmpresaRoute,
   NovaRoute: NovaRoute,
   FvsIdRoute: FvsIdRoute,
