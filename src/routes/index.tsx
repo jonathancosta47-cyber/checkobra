@@ -5,9 +5,9 @@ import { loadOrders, statusLabel, type ServiceOrder } from "@/lib/orders";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Ordens de Serviço — Manutenção" },
+      { title: "CheckObra — Ordens de Serviço e FVS" },
       { name: "description", content: "Crie ordens de serviço de manutenção com fotos, dados do cliente e assinatura." },
-      { property: "og:title", content: "Ordens de Serviço — Manutenção" },
+      { property: "og:title", content: "CheckObra — Ordens de Serviço e FVS" },
       { property: "og:description", content: "Gerador de ordens de serviço com fotos e assinatura digital." },
     ],
   }),
@@ -26,7 +26,7 @@ function Index() {
     <main className="mx-auto min-h-screen max-w-3xl px-4 pb-28 pt-8">
       <header className="mb-6 flex items-end justify-between gap-3">
         <div>
-          <p className="eyebrow">Manutenção</p>
+          <p className="eyebrow">CheckObra</p>
           <h1 className="font-display text-4xl font-bold">Ordens de Serviço</h1>
         </div>
         <div className="flex gap-2">
