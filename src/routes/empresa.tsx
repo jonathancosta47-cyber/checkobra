@@ -28,7 +28,7 @@ function CompanyPage() {
       <Link to="/" className="text-sm text-muted-foreground">← Voltar</Link>
       <h1 className="mb-6 mt-2 font-display text-3xl font-bold">Minha empresa</h1>
       <form className="panel space-y-4" onSubmit={(e) => { e.preventDefault(); saveCompany(c); setSaved(true); }}>
-        <h2 className="eyebrow">Logotipo</h2>
+        <h2 className="eyebrow">Logotipo principal</h2>
         <div className="flex items-center gap-4">
           <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-md border-2 border-dashed border-border bg-background">
             {c.logo ? <img src={c.logo} alt="Logotipo" className="h-full w-full object-contain" /> : <span className="text-xs text-muted-foreground">Sem logo</span>}
@@ -39,6 +39,19 @@ function CompanyPage() {
               <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) upd({ logo: await compressImage(f, 500, "image/png") }); }} />
             </label>
             {c.logo && <button type="button" className="text-sm font-semibold text-primary" onClick={() => upd({ logo: null })}>Remover</button>}
+          </div>
+        </div>
+        <h2 className="eyebrow">Segundo logotipo (opcional)</h2>
+        <div className="flex items-center gap-4">
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-md border-2 border-dashed border-border bg-background">
+            {c.logo2 ? <img src={c.logo2} alt="Logotipo" className="h-full w-full object-contain" /> : <span className="text-xs text-muted-foreground">Sem logo</span>}
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="btn-ghost cursor-pointer">
+              Escolher imagem
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) upd({ logo2: await compressImage(f, 500, "image/png") }); }} />
+            </label>
+            {c.logo2 && <button type="button" className="text-sm font-semibold text-primary" onClick={() => upd({ logo2: null })}>Remover</button>}
           </div>
         </div>
         <input className="field" placeholder="Nome da empresa" value={c.name} onChange={(e) => upd({ name: e.target.value })} />
