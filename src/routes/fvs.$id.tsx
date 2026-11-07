@@ -55,29 +55,29 @@ function FvsView() {
             </div>
           </div>
         )}
-        <header className="border-b border-border pb-4">
+        <header className="report-head">
           <p className="eyebrow">Ficha de Verificação de Serviço</p>
           <h1 className="font-display text-3xl font-bold">#{num} — {f.templateName}</h1>
-          <p className="text-sm text-muted-foreground">{new Date(f.createdAt).toLocaleString("pt-BR")}</p>
+          <p className="text-sm opacity-80">{new Date(f.createdAt).toLocaleString("pt-BR")}</p>
           <p className="mt-2 text-sm">Obra: {f.obra || "—"} · Local: {f.local || "—"} · Responsável: {f.responsavel || "—"}</p>
         </header>
 
         {(f.executor || f.crewList?.length || f.quantity || f.unitPrice) && (
           <section>
-            <h2 className="eyebrow mb-2">Execução e medição</h2>
+            <h2 className="report-section-title">Execução e medição</h2>
             {f.executor && <p className="mb-2 text-sm">Responsável pela execução: <b>{f.executor}</b></p>}
             {(f.crewList?.length || f.crew) && <p className="mb-2 text-sm">Efetivo: <b>{f.crewList?.length ? f.crewList.filter((m) => m.role || m.qty).map((m) => `${m.qty} ${m.role}`).join(", ") : `${f.crew} pessoa(s)`}</b></p>}
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="py-1">Unidade</th><th>Quantidade</th><th>Valor unit.</th><th className="text-right">Total</th></tr></thead>
+            <table className="report-table w-full text-sm">
+              <thead><tr className="border-b border-border text-left text-xs uppercase"><th className="py-1">Unidade</th><th>Quantidade</th><th>Valor unit.</th><th className="text-right">Total</th></tr></thead>
               <tbody><tr><td className="py-2">{f.unit || "—"}</td><td>{f.quantity || "—"}</td><td>{brl(parseNum(f.unitPrice))}</td><td className="text-right font-bold">{brl(fvsTotal(f))}</td></tr></tbody>
             </table>
           </section>
         )}
 
         <section>
-          <h2 className="eyebrow mb-2">Itens verificados</h2>
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="py-1">Item</th><th className="w-32 py-1">Resultado</th></tr></thead>
+          <h2 className="report-section-title">Itens verificados</h2>
+          <table className="report-table w-full text-sm">
+            <thead><tr className="border-b border-border text-left text-xs uppercase"><th className="py-1">Item</th><th className="w-32 py-1">Resultado</th></tr></thead>
             <tbody>
               {f.items.map((it, k) => (
                 <tr key={k} className="border-b border-border align-top">
@@ -92,13 +92,13 @@ function FvsView() {
 
         {f.photos.length > 0 && (
           <section>
-            <h2 className="eyebrow mb-2">Fotos</h2>
+            <h2 className="report-section-title">Fotos</h2>
             <div className="grid grid-cols-3 gap-2">{f.photos.map((p, i) => <img key={i} src={p} alt={`Foto ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />)}</div>
           </section>
         )}
 
         <section className="border-t border-border pt-4">
-          <h2 className="eyebrow mb-2">Responsável</h2>
+          <h2 className="report-section-title">Responsável</h2>
           {f.signature ? <img src={f.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" /> : <div className="h-24 max-w-sm" />}
           <div className="max-w-sm border-t border-foreground pt-1 text-sm">{f.signedBy || "Assinatura do responsável"}</div>
         </section>

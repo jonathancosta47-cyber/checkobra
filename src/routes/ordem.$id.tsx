@@ -65,17 +65,17 @@ function OrderView() {
             </div>
           </div>
         )}
-        <header className="flex items-start justify-between border-b border-border pb-4">
+        <header className="report-head flex items-start justify-between">
           <div>
             <p className="eyebrow">Ordem de Serviço</p>
             <h1 className="font-display text-3xl font-bold">#{String(o.number).padStart(4, "0")}</h1>
-            <p className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString("pt-BR")}</p>
+            <p className="text-sm opacity-80">{new Date(o.createdAt).toLocaleString("pt-BR")}</p>
           </div>
           <span className={`badge badge-${o.status}`}>{statusLabel[o.status]}</span>
         </header>
 
         <section>
-          <h2 className="eyebrow mb-2">Cliente</h2>
+          <h2 className="report-section-title">Cliente</h2>
           <dl className="grid gap-3 sm:grid-cols-2">
             <Row label="Nome" value={o.client.name} />
             <Row label="CPF / CNPJ" value={o.client.document} />
@@ -86,7 +86,7 @@ function OrderView() {
         </section>
 
         <section>
-          <h2 className="eyebrow mb-2">Serviço</h2>
+          <h2 className="report-section-title">Serviço</h2>
           <dl className="grid gap-3">
             <Row label="Equipamento / local" value={o.equipment} />
             <Row label="Problema relatado" value={o.problem} />
@@ -100,7 +100,7 @@ function OrderView() {
 
         {o.photos.length > 0 && (
           <section>
-            <h2 className="eyebrow mb-2">Fotos</h2>
+            <h2 className="report-section-title">Fotos</h2>
             <div className="grid grid-cols-3 gap-2">
               {o.photos.map((p, i) => (
                 <img key={i} src={p} alt={`Foto ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />
@@ -110,7 +110,7 @@ function OrderView() {
         )}
 
         <section className="border-t border-border pt-4">
-          <h2 className="eyebrow mb-2">Recebimento</h2>
+          <h2 className="report-section-title">Recebimento</h2>
           {o.signature ? (
             <img src={o.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" />
           ) : (

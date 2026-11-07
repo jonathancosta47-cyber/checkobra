@@ -177,6 +177,16 @@
   .badge-concluida { @apply bg-success/15 text-success; }
 }
 
+@layer components {
+  .report-head { @apply rounded-lg bg-primary px-5 py-4 text-primary-foreground; }
+  .report-head .eyebrow, .report-head .text-muted-foreground, .report-head .text-primary { @apply text-primary-foreground; }
+  .report-table thead tr { @apply bg-primary text-primary-foreground; }
+  .report-table th { @apply px-2; }
+  .report-table td { @apply px-2; }
+  .report-table tbody tr:nth-child(even) { @apply bg-primary/5; }
+  .report-section-title { @apply mb-2 border-b-2 border-primary pb-1 font-display text-sm font-bold uppercase tracking-wider text-primary; }
+}
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 @media print {
   .no-print { display: none !important; }
   body { background: white; }
