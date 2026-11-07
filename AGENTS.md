@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Apartment handover inspections use their own Cloud table with owner-scoped RLS; legacy OS/FVS storage remains unchanged to avoid implicit migration.
+- Keep delivery checklist definitions and validation in a browser-safe domain module, with persistence separate and shared form/report components behind leaf routes.

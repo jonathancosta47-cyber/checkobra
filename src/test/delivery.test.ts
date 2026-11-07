@@ -1,0 +1,48 @@
+import { expect, test } from "vitest";
+import { newDelivery, issuesOf, pendingCount, validateDelivery } from "@/lib/delivery";
+test("delivery includes all ten inspection groups and 121 inspection items", () => {
+  const d = newDelivery();
+  expect(d.rooms).toHaveLength(10);
+  expect(d.rooms.map((r) => r.items.length)).toEqual([12, 16, 21, 13, 11, 8, 12, 12, 7, 9]);
+});
+test("nonconformity requires description, location, photo, owner and correction deadline", () => {
+  const d = newDelivery();
+  const item = d.rooms[0]?.items[0];
+  if (!item) throw new Error("Missing item");
+  item.result = "NC";
+  Object.assign(item, {
+    description: "Risco",
+    location: "Perto da porta",
+    owner: "Equipe",
+    deadline: "2026-11-10",
+    photos: ["data:image/png;base64,example"],
+  });
+  expect(validateDelivery(d)).toBeNull();
+  for (const key of ["description", "location", "owner", "deadline"] as const) {
+    const prior = item[key];
+    item[key] = "";
+    expect(validateDelivery(d)).not.toBeNull();
+    item[key] = prior;
+  }
+  item.photos = [];
+  expect(validateDelivery(d)).not.toBeNull();
+});
+test("pending count includes corrected items until closure", () => {
+  const d = newDelivery();
+  const item = d.rooms[0]?.items[0];
+  if (!item) throw new Error("Missing item");
+  item.result = "NC";
+  item.status = "Corrigida";
+  expect(pendingCount(d)).toBe(1);
+  item.status = "Encerrada";
+  expect(pendingCount(d)).toBe(0);
+  expect(issuesOf(d)).toHaveLength(1);
+});
+test("pending test is distinct from nonconformity", () => {
+  const d = newDelivery();
+  const item = d.rooms[0]?.items[0];
+  if (!item) throw new Error("Missing item");
+  item.result = "PT";
+  expect(issuesOf(d)).toHaveLength(0);
+  expect(validateDelivery(d)).toBeNull();
+});

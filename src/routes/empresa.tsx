@@ -9,6 +9,8 @@ export const Route = createFileRoute("/empresa")({
       { name: "description", content: "Configure o logotipo e os dados da sua empresa nas ordens de serviço." },
       { property: "og:title", content: "Dados da Empresa" },
       { property: "og:description", content: "Logotipo e dados da empresa para as OS." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CompanyPage,

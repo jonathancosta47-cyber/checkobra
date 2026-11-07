@@ -1,0 +1,324 @@
+export const evaluationLabels = {
+  C: "Conforme",
+  NC: "Não conforme",
+  NA: "Não aplicável",
+  PT: "Pendente de teste",
+} as const;
+export type Evaluation = keyof typeof evaluationLabels | null;
+export const issueStatuses = [
+  "Aberta",
+  "Em execução",
+  "Aguardando material",
+  "Corrigida",
+  "Reprovada na reinspeção",
+  "Encerrada",
+] as const;
+export const finalResults = [
+  "Aprovado para entrega",
+  "Aprovado com ressalvas",
+  "Reprovado – necessita correções",
+  "Aguardando reinspeção",
+] as const;
+export const documentLabels = [
+  "Manual do proprietário",
+  "Manual de uso e operação da unidade",
+  "Termo de garantia",
+  "Relação de fornecedores e assistências técnicas",
+  "Projetos e informações disponibilizados ao proprietário",
+  "Orientações sobre registros hidráulicos e quadro elétrico",
+  "Orientações sobre equipamentos e sistemas instalados",
+  "Relação de chaves e controles entregues",
+  "Termo de recebimento da unidade",
+  "Registro fotográfico final",
+];
+export interface DeliveryItem {
+  id: string;
+  text: string;
+  criteria: string;
+  result: Evaluation;
+  description: string;
+  location: string;
+  photos: string[];
+  owner: string;
+  deadline: string;
+  status: (typeof issueStatuses)[number];
+  severity: string;
+}
+export interface DeliveryRoom {
+  id: string;
+  name: string;
+  items: DeliveryItem[];
+}
+export interface Delivery {
+  id: string;
+  createdAt: string;
+  unit: {
+    development: string;
+    tower: string;
+    apartment: string;
+    floor: string;
+    area: string;
+    date: string;
+    inspector: string;
+    representative: string;
+    buyer: string;
+  };
+  rooms: DeliveryRoom[];
+  documents: boolean[];
+  result: string;
+  observations: string;
+  photos: string[];
+  signatures: { role: string; name: string; image: string | null }[];
+}
+const roomSpecs = [
+  [
+    "Sala de estar / jantar",
+    [
+      "Piso sem riscos, trincas ou peças ocas",
+      "Rejuntamento uniforme",
+      "Rodapés alinhados e sem danos",
+      "Paredes sem manchas ou imperfeições",
+      "Pintura uniforme, sem falhas",
+      "Forro sem fissuras ou ondulações",
+      "Teto sem manchas de infiltração",
+      "Portas e batentes sem avarias",
+      "Fechaduras e dobradiças funcionando",
+      "Tomadas e interruptores funcionando",
+      "Pontos de iluminação funcionando",
+      "Campainha e interfone funcionando",
+    ],
+  ],
+  [
+    "Cozinha / área de serviço",
+    [
+      "Piso e revestimentos sem danos",
+      "Rejuntamento completo",
+      "Bancadas sem trincas ou riscos",
+      "Cuba corretamente instalada e vedada",
+      "Torneira funcionando e sem vazamentos",
+      "Sifão instalado e estanque",
+      "Escoamento da pia adequado",
+      "Pontos de água e esgoto funcionando",
+      "Registro de água funcionando",
+      "Tomadas funcionando",
+      "Ponto de gás conforme projeto",
+      "Ralo e caixa sifonada funcionando",
+      "Tanque instalado e vedado",
+      "Ponto para máquina de lavar funcionando",
+      "Caimento do piso adequado",
+      "Ausência de vazamentos",
+    ],
+  ],
+  [
+    "Banheiros / lavabos",
+    [
+      "Piso sem trincas ou peças ocas",
+      "Revestimentos alinhados",
+      "Rejuntamento completo",
+      "Caimento adequado para o ralo",
+      "Teste de escoamento realizado",
+      "Box / área de banho sem empoçamentos",
+      "Impermeabilização sem sinais de falha",
+      "Ralos e grelhas instalados",
+      "Caixa sifonada limpa e funcionando",
+      "Bacia sanitária firme e nivelada",
+      "Descarga funcionando corretamente",
+      "Vedação da bacia sanitária adequada",
+      "Lavatório / bancada sem avarias",
+      "Torneiras sem vazamentos",
+      "Sifões e conexões estanques",
+      "Registros funcionando",
+      "Chuveiro e pontos hidráulicos testados",
+      "Metais e acessórios instalados",
+      "Espelho instalado, quando previsto",
+      "Pintura e forro em boas condições",
+      "Ventilação funcionando, quando prevista",
+    ],
+  ],
+  [
+    "Quartos",
+    [
+      "Piso sem riscos ou danos",
+      "Rodapés alinhados",
+      "Paredes com acabamento uniforme",
+      "Pintura sem manchas",
+      "Forro sem fissuras",
+      "Portas e batentes funcionando",
+      "Fechaduras e dobradiças funcionando",
+      "Janelas abrindo e fechando corretamente",
+      "Vidros sem riscos ou trincas",
+      "Persianas funcionando, quando previstas",
+      "Tomadas e interruptores funcionando",
+      "Pontos de iluminação funcionando",
+      "Pontos de TV e dados identificados",
+    ],
+  ],
+  [
+    "Sacada / varanda",
+    [
+      "Piso sem danos",
+      "Rejuntamento completo",
+      "Caimento direcionado aos ralos",
+      "Ralos desobstruídos",
+      "Teste de escoamento realizado",
+      "Guarda-corpo firme e seguro",
+      "Esquadrias funcionando",
+      "Vidros sem avarias",
+      "Vedação das esquadrias adequada",
+      "Pontos elétricos funcionando",
+      "Ausência de infiltrações",
+    ],
+  ],
+  [
+    "Esquadrias e vidros",
+    [
+      "Marcos e contramarcos alinhados",
+      "Folhas sem deformações",
+      "Fechaduras e travas funcionando",
+      "Drenos desobstruídos",
+      "Borrachas de vedação instaladas",
+      "Silicone e selantes bem aplicados",
+      "Vidros sem riscos ou trincas",
+      "Teste de estanqueidade realizado, quando previsto",
+    ],
+  ],
+  [
+    "Instalações elétricas",
+    [
+      "Quadro elétrico identificado",
+      "Disjuntores identificados",
+      "Disjuntores conforme projeto",
+      "DR testado, quando previsto",
+      "DPS instalado, quando previsto",
+      "Aterramento verificado",
+      "Tomadas com polaridade correta",
+      "Tensão dos pontos conferida",
+      "Interruptores funcionando",
+      "Iluminação funcionando",
+      "Campainha e interfone funcionando",
+      "Circuitos identificados e testados",
+    ],
+  ],
+  [
+    "Instalações hidráulicas e gás",
+    [
+      "Registros identificados",
+      "Registros funcionando",
+      "Ausência de vazamentos aparentes",
+      "Pressão nos pontos de água adequada",
+      "Escoamento dos pontos de esgoto adequado",
+      "Sifões e conexões estanques",
+      "Ralos e caixas sifonadas desobstruídos",
+      "Medidor de água identificado, quando aplicável",
+      "Instalação de gás conforme projeto",
+      "Teste de estanqueidade de gás documentado",
+      "Aquecedor funcionando, quando previsto",
+      "Água quente funcionando, quando prevista",
+    ],
+  ],
+  [
+    "Equipamentos e sistemas complementares",
+    [
+      "Piso aquecido funcionando, quando previsto",
+      "Termostato configurado e testado",
+      "Sistema de exaustão funcionando",
+      "Ar-condicionado / infraestrutura conferida",
+      "Interfone funcionando",
+      "Automação funcionando, quando prevista",
+      "Equipamentos entregues conforme memorial",
+    ],
+  ],
+  [
+    "Limpeza e acabamento final",
+    [
+      "Apartamento completamente limpo",
+      "Pisos sem resíduos de argamassa ou tinta",
+      "Vidros limpos",
+      "Louças e metais limpos",
+      "Ralos e caixas sifonadas limpos",
+      "Portas e esquadrias limpas",
+      "Proteções e etiquetas de obra removidas",
+      "Todos os ambientes sem materiais ou entulho",
+      "Chaves e controles separados",
+    ],
+  ],
+] as const;
+export function newItem(text = ""): DeliveryItem {
+  return {
+    id: crypto.randomUUID(),
+    text,
+    criteria: "",
+    result: null,
+    description: "",
+    location: "",
+    photos: [],
+    owner: "",
+    deadline: "",
+    status: "Aberta",
+    severity: "",
+  };
+}
+export function newDelivery(): Delivery {
+  const now = new Date();
+  return {
+    id: crypto.randomUUID(),
+    createdAt: now.toISOString(),
+    unit: {
+      development: "",
+      tower: "",
+      apartment: "",
+      floor: "",
+      area: "",
+      date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+      inspector: "",
+      representative: "",
+      buyer: "",
+    },
+    rooms: roomSpecs.map(([name, items]) => ({
+      id: crypto.randomUUID(),
+      name,
+      items: items.map((text) => newItem(text)),
+    })),
+    documents: documentLabels.map(() => false),
+    result: "",
+    observations: "",
+    photos: [],
+    signatures: [
+      "Engenheiro responsável",
+      "Representante da construtora",
+      "Proprietário / comprador",
+    ].map((role) => ({ role, name: "", image: null })),
+  };
+}
+export const issuesOf = (d: Delivery) =>
+  d.rooms.flatMap((room) =>
+    room.items.filter((item) => item.result === "NC").map((item) => ({ room: room.name, item })),
+  );
+export const pendingCount = (d: Delivery) =>
+  issuesOf(d).filter(({ item }) => item.status !== "Encerrada").length;
+export function validateDelivery(d: Delivery): string | null {
+  for (const { room, item } of issuesOf(d)) {
+    if (
+      !item.description.trim() ||
+      !item.location.trim() ||
+      !item.owner.trim() ||
+      !item.deadline ||
+      !item.photos.length
+    )
+      return `${room}: complete descrição, localização, foto, responsável e prazo de “${item.text}”.`;
+  }
+  return null;
+}
+export function summaryText(d: Delivery) {
+  return [
+    `${d.unit.development} — ${d.unit.tower} — Apartamento ${d.unit.apartment}`,
+    `Data: ${d.unit.date}`,
+    `Resultado: ${d.result || "Não definido"}`,
+    `Pendências: ${pendingCount(d)}`,
+    ...issuesOf(d).map(
+      ({ room, item }, i) =>
+        `${i + 1}. ${room} / ${item.location}: ${item.description} | ${item.owner} | ${item.deadline} | ${item.status}`,
+    ),
+    `Observações: ${d.observations || "—"}`,
+  ].join("\n");
+}

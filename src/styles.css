@@ -187,8 +187,13 @@
   .report-section-title { @apply mb-2 border-b-2 border-primary pb-1 font-display text-sm font-bold uppercase tracking-wider text-primary; }
 }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.delivery-report { overflow-wrap: anywhere; font-family: var(--font-sans); }
+.delivery-report [data-pdf-block] { break-inside: avoid; }
+.google-signin { background: oklch(1 0 0); border-color: oklch(0.56 0.005 120); color: oklch(0.25 0.005 120); }
 @media print {
   .no-print { display: none !important; }
   body { background: white; }
   .panel { border: none; }
+  .delivery-report { padding: 0; }
+  .delivery-report thead { display: table-header-group; }
 }
