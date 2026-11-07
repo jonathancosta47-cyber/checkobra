@@ -59,11 +59,11 @@ function FvsView() {
           <p className="mt-2 text-sm">Obra: {f.obra || "—"} · Local: {f.local || "—"} · Responsável: {f.responsavel || "—"}</p>
         </header>
 
-        {(f.executor || f.quantity || f.unitPrice) && (
+        {(f.executor || f.crewList?.length || f.quantity || f.unitPrice) && (
           <section>
             <h2 className="eyebrow mb-2">Execução e medição</h2>
             {f.executor && <p className="mb-2 text-sm">Responsável pela execução: <b>{f.executor}</b></p>}
-            {f.crew && <p className="mb-2 text-sm">Efetivo: <b>{f.crew} pessoa(s)</b></p>}
+            {(f.crewList?.length || f.crew) && <p className="mb-2 text-sm">Efetivo: <b>{f.crewList?.length ? f.crewList.filter((m) => m.role || m.qty).map((m) => `${m.qty} ${m.role}`).join(", ") : `${f.crew} pessoa(s)`}</b></p>}
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="py-1">Unidade</th><th>Quantidade</th><th>Valor unit.</th><th className="text-right">Total</th></tr></thead>
               <tbody><tr><td className="py-2">{f.unit || "—"}</td><td>{f.quantity || "—"}</td><td>{brl(parseNum(f.unitPrice))}</td><td className="text-right font-bold">{brl(fvsTotal(f))}</td></tr></tbody>
@@ -78,7 +78,7 @@ function FvsView() {
             <tbody>
               {f.items.map((it, k) => (
                 <tr key={k} className="border-b border-border align-top">
-                  <td className="py-2">{k + 1}. {it.text}{it.note && <p className="text-xs text-muted-foreground">NC: {it.note}</p>}</td>
+                  <td className="py-2">{k + 1}. {it.text}{it.criteria && <p className="text-xs text-muted-foreground">Critério: {it.criteria}</p>}{it.note && <p className="text-xs text-muted-foreground">NC: {it.note}</p>}</td>
                   <td className={`py-2 font-semibold ${it.result === "NC" ? "text-destructive" : ""}`}>{it.result ? resultLabel[it.result] : "—"}</td>
                 </tr>
               ))}
