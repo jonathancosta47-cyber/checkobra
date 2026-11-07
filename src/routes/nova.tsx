@@ -11,6 +11,8 @@ export const Route = createFileRoute("/nova")({
       { name: "description", content: "Preencha os dados do cliente, serviço, fotos e assinatura." },
       { property: "og:title", content: "Nova Ordem de Serviço" },
       { property: "og:description", content: "Crie uma nova OS de manutenção." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: NewOrder,

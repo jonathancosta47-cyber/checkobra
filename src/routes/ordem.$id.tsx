@@ -11,6 +11,8 @@ export const Route = createFileRoute("/ordem/$id")({
       { name: "description", content: "Visualize, imprima ou compartilhe a ordem de serviço em PDF." },
       { property: "og:title", content: "Ordem de Serviço — Detalhes" },
       { property: "og:description", content: "Detalhes da ordem de serviço de manutenção." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: OrderView,
