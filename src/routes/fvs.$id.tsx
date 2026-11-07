@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { exportElementToPdf } from "@/lib/pdf";
 import { loadCompany, type Company } from "@/lib/orders";
-import { deleteInspection, getInspection, resultLabel, type FvsInspection } from "@/lib/fvs";
+import { deleteInspection, getInspection, resultLabel, fvsTotal, brl, parseNum, type FvsInspection } from "@/lib/fvs";
 
 export const Route = createFileRoute("/fvs/$id")({
   head: () => ({
@@ -58,6 +58,17 @@ function FvsView() {
           <p className="text-sm text-muted-foreground">{new Date(f.createdAt).toLocaleString("pt-BR")}</p>
           <p className="mt-2 text-sm">Obra: {f.obra || "—"} · Local: {f.local || "—"} · Responsável: {f.responsavel || "—"}</p>
         </header>
+
+        {(f.executor || f.quantity || f.unitPrice) && (
+          <section>
+            <h2 className="eyebrow mb-2">Execução e medição</h2>
+            {f.executor && <p className="mb-2 text-sm">Responsável pela execução: <b>{f.executor}</b></p>}
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="py-1">Unidade</th><th>Quantidade</th><th>Valor unit.</th><th className="text-right">Total</th></tr></thead>
+              <tbody><tr><td className="py-2">{f.unit || "—"}</td><td>{f.quantity || "—"}</td><td>{brl(parseNum(f.unitPrice))}</td><td className="text-right font-bold">{brl(fvsTotal(f))}</td></tr></tbody>
+            </table>
+          </section>
+        )}
 
         <section>
           <h2 className="eyebrow mb-2">Itens verificados</h2>
