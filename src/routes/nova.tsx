@@ -32,6 +32,9 @@ const empty = (): ServiceOrder => ({
   photos: [],
   signature: null,
   signedBy: "",
+  openerName: "",
+  openerSignature: null,
+  techSignature: null,
 });
 
 function NewOrder() {
@@ -93,7 +96,7 @@ function NewOrder() {
             <select className="field" value={o.status} onChange={(e) => set({ status: e.target.value as ServiceOrder["status"] })}>
               <option value="aberta">Aberta</option>
               <option value="em_andamento">Em andamento</option>
-              <option value="concluida">Concluída</option>
+              <option value="concluida">Fechada</option>
             </select>
           </div>
         </section>
@@ -115,9 +118,15 @@ function NewOrder() {
         </section>
 
         <section className="panel space-y-3">
-          <h2 className="eyebrow">Assinatura de recebimento</h2>
-          <input className="field" placeholder="Nome de quem recebeu" value={o.signedBy} onChange={(e) => set({ signedBy: e.target.value })} />
+          <h2 className="eyebrow">Assinaturas</h2>
+          <p className="text-sm font-semibold">1. Cliente (recebimento)</p>
+          <input className="field" placeholder="Nome do cliente / quem recebeu" value={o.signedBy} onChange={(e) => set({ signedBy: e.target.value })} />
           <SignaturePad value={o.signature} onChange={(signature) => setO((cur) => (cur ? { ...cur, signature } : cur))} />
+          <p className="pt-2 text-sm font-semibold">2. Responsável pela abertura da OS</p>
+          <input className="field" placeholder="Nome do responsável" value={o.openerName ?? ""} onChange={(e) => set({ openerName: e.target.value })} />
+          <SignaturePad value={o.openerSignature ?? null} onChange={(openerSignature) => setO((cur) => (cur ? { ...cur, openerSignature } : cur))} />
+          <p className="pt-2 text-sm font-semibold">3. Técnico responsável{o.technician ? ` — ${o.technician}` : ""}</p>
+          <SignaturePad value={o.techSignature ?? null} onChange={(techSignature) => setO((cur) => (cur ? { ...cur, techSignature } : cur))} />
         </section>
 
         <button type="submit" className="btn-primary w-full">Salvar ordem de serviço</button>

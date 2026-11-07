@@ -101,13 +101,20 @@ function OrderView() {
         )}
 
         <section className="border-t border-border pt-4 pb-3" data-pdf-block>
-          <h2 className="report-section-title">Recebimento</h2>
-          {o.signature ? (
-            <img src={o.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" />
-          ) : (
-            <div className="h-24 max-w-sm" />
-          )}
-          <div className="max-w-sm border-t border-foreground pt-1 text-sm">{o.signedBy || "Assinatura do cliente"}</div>
+          <h2 className="report-section-title">Assinaturas</h2>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              { img: o.signature, name: o.signedBy, role: "Cliente" },
+              { img: o.openerSignature, name: o.openerName, role: "Responsável pela abertura" },
+              { img: o.techSignature, name: o.technician, role: "Técnico responsável" },
+            ].map((s) => (
+              <div key={s.role}>
+                {s.img ? <img src={s.img} alt={`Assinatura ${s.role}`} className="h-24 w-full object-contain" /> : <div className="h-24" />}
+                <div className="border-t border-foreground pt-1 text-sm">{s.name || "\u00A0"}</div>
+                <p className="text-xs text-muted-foreground">{s.role}</p>
+              </div>
+            ))}
+          </div>
         </section>
       </article>
     </main>
