@@ -108,7 +108,7 @@ function OrderView() {
           </section>
         )}
 
-        <section className="border-t border-border pt-4" data-pdf-block>
+        <section className="border-t border-border pt-4 pb-3" data-pdf-block>
           <h2 className="report-section-title">Recebimento</h2>
           {o.signature ? (
             <img src={o.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" />
