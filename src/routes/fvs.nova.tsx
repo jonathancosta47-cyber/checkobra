@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SignaturePad } from "@/components/SignaturePad";
 import { compressImage } from "@/lib/orders";
-import { getInspection, loadTemplates, nextFvsNumber, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
+import { getInspection, loadTemplates, nextFvsNumber, fvsTotal, brl, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
 
 export const Route = createFileRoute("/fvs/nova")({
   validateSearch: (s: Record<string, unknown>): { id?: string } => (typeof s["id"] === "string" ? { id: s["id"] } : {}),
@@ -64,6 +64,17 @@ function NewFvs() {
             <input className="field" placeholder="Local (bloco, pavimento, unidade)" value={f.local} onChange={(e) => set({ local: e.target.value })} />
             <input className="field" placeholder="Responsável pela vistoria" value={f.responsavel} onChange={(e) => set({ responsavel: e.target.value })} />
           </div>
+        </section>
+
+        <section className="panel space-y-3">
+          <h2 className="eyebrow">Execução e medição</h2>
+          <input className="field" placeholder="Responsável pela execução (empreiteiro)" value={f.executor ?? ""} onChange={(e) => set({ executor: e.target.value })} />
+          <div className="grid grid-cols-3 gap-3">
+            <input className="field" placeholder="Unidade (m²)" value={f.unit ?? ""} onChange={(e) => set({ unit: e.target.value })} />
+            <input className="field" inputMode="decimal" placeholder="Quantidade" value={f.quantity ?? ""} onChange={(e) => set({ quantity: e.target.value })} />
+            <input className="field" inputMode="decimal" placeholder="Valor unit. (R$)" value={f.unitPrice ?? ""} onChange={(e) => set({ unitPrice: e.target.value })} />
+          </div>
+          <p className="text-right font-display text-xl font-bold">Total: <span className="text-primary">{brl(fvsTotal(f))}</span></p>
         </section>
 
         {f.items.length > 0 && (
