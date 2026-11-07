@@ -8,3 +8,7 @@
 # Intact report pagination
 - [x] Keep photo rows and signatures intact in all PDF/print reports.
 - [x] Test safe page boundaries and verify downloaded PDFs and native printing (OS and FVS; 15 intact photos and one intact signature each).
+
+# Company logos
+- [x] Let the company register up to three logos and show them in OS, FVS and handover reports.
+- [x] Verify three logos in the settings page, on screen and in downloaded PDFs (proportions kept, nothing cut off).
