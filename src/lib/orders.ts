@@ -14,6 +14,9 @@ export interface ServiceOrder {
   photos: string[];
   signature: string | null;
   signedBy: string;
+  openerName?: string;
+  openerSignature?: string | null;
+  techSignature?: string | null;
 }
 
 const KEY = "os-manutencao:orders";
@@ -47,7 +50,7 @@ export function nextNumber() {
 export const statusLabel: Record<OrderStatus, string> = {
   aberta: "Aberta",
   em_andamento: "Em andamento",
-  concluida: "Concluída",
+  concluida: "Fechada",
 };
 
 export function compressImage(file: File, max = 1200, type = "image/jpeg"): Promise<string> {
