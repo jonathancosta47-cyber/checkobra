@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Check, X, Minus } from "lucide-react";
 import { SignaturePad } from "@/components/SignaturePad";
 import { compressImage } from "@/lib/orders";
 import { getInspection, loadTemplates, nextFvsNumber, fvsTotal, brl, loadContractors, findContract, type Contractor, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/fvs/nova")({
 });
 
 const opts: { v: Exclude<FvsResult, null>; l: string }[] = [{ v: "C", l: "C" }, { v: "NC", l: "NC" }, { v: "NA", l: "N/A" }];
+
+const resultIcon = { C: <Check className="h-5 w-5 text-success" strokeWidth={3} />, NC: <X className="h-5 w-5 text-destructive" strokeWidth={3} />, NA: <Minus className="h-5 w-5 text-warning" strokeWidth={3} /> };
 
 function NewFvs() {
   const { id } = Route.useSearch();
@@ -111,7 +114,7 @@ function NewFvs() {
                 <div className="flex gap-2">
                   {opts.map((o) => (
                     <button type="button" key={o.v} onClick={() => set({ items: f.items.map((x, m) => (m === k ? { ...x, result: x.result === o.v ? null : o.v } : x)) })}
-                      className={it.result === o.v ? "btn-primary flex-1" : "btn-ghost flex-1"}>{o.l}</button>
+                      className={`btn-ghost flex-1 justify-center gap-1 ${it.result === o.v ? (o.v === "C" ? "border-success bg-success/15" : o.v === "NC" ? "border-destructive bg-destructive/15" : "border-warning bg-warning/20") : ""}`}>{resultIcon[o.v]}{o.l}</button>
                   ))}
                 </div>
                 {it.result === "NC" && (
