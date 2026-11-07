@@ -29,7 +29,10 @@ function Index() {
           <p className="eyebrow">Manutenção</p>
           <h1 className="font-display text-4xl font-bold">Ordens de Serviço</h1>
         </div>
-        <Link to="/empresa" className="btn-ghost">Minha empresa</Link>
+        <div className="flex gap-2">
+          <Link to="/fvs" className="btn-ghost">Vistorias FVS</Link>
+          <Link to="/empresa" className="btn-ghost">Minha empresa</Link>
+        </div>
       </header>
       <input className="field mb-5" placeholder="Buscar por nº, cliente ou equipamento" value={q} onChange={(e) => setQ(e.target.value)} />
       {list.length === 0 ? (

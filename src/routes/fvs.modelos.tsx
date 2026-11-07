@@ -1,0 +1,54 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { loadTemplates, saveTemplates, type FvsTemplate } from "@/lib/fvs";
+
+export const Route = createFileRoute("/fvs/modelos")({
+  head: () => ({
+    meta: [
+      { title: "Modelos de FVS" },
+      { name: "description", content: "Crie e edite modelos de Fichas de Verificação de Serviço." },
+      { property: "og:title", content: "Modelos de FVS" },
+      { property: "og:description", content: "Crie e edite checklists de FVS para obras." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: Templates,
+});
+
+function Templates() {
+  const [list, setList] = useState<FvsTemplate[]>([]);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => setList(loadTemplates()), []);
+  const update = (i: number, t: FvsTemplate) => { setSaved(false); setList(list.map((x, j) => (j === i ? t : x))); };
+
+  return (
+    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6">
+      <Link to="/fvs" className="text-sm text-muted-foreground">← Vistorias FVS</Link>
+      <h1 className="mb-6 mt-2 font-display text-3xl font-bold">Modelos de FVS</h1>
+      <div className="space-y-5">
+        {list.map((t, i) => (
+          <section key={t.id} className="panel space-y-3">
+            <div className="flex gap-2">
+              <input className="field flex-1 font-semibold" placeholder="Nome do serviço (ex: Reboco)" value={t.name} onChange={(e) => update(i, { ...t, name: e.target.value })} />
+              <button type="button" className="btn-ghost" onClick={() => { if (confirm("Excluir este modelo?")) { setSaved(false); setList(list.filter((_, j) => j !== i)); } }}>Excluir</button>
+            </div>
+            <h2 className="eyebrow">Itens a verificar</h2>
+            {t.items.map((it, k) => (
+              <div key={k} className="flex gap-2">
+                <input className="field flex-1" value={it} placeholder={`Item ${k + 1}`} onChange={(e) => update(i, { ...t, items: t.items.map((x, m) => (m === k ? e.target.value : x)) })} />
+                <button type="button" className="btn-ghost" aria-label="Remover item" onClick={() => update(i, { ...t, items: t.items.filter((_, m) => m !== k) })}>×</button>
+              </div>
+            ))}
+            <button type="button" className="btn-ghost" onClick={() => update(i, { ...t, items: [...t.items, ""] })}>+ Item</button>
+          </section>
+        ))}
+        <button type="button" className="btn-ghost w-full" onClick={() => { setSaved(false); setList([...list, { id: crypto.randomUUID(), name: "", items: [""] }]); }}>+ Novo modelo de FVS</button>
+        <button type="button" className="btn-primary w-full" onClick={() => {
+          saveTemplates(list.map((t) => ({ ...t, name: t.name.trim() || "Sem nome", items: t.items.map((x) => x.trim()).filter(Boolean) })));
+          setList(loadTemplates()); setSaved(true);
+        }}>{saved ? "Salvo ✓" : "Salvar modelos"}</button>
+      </div>
+    </main>
+  );
+}
