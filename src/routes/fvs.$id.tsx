@@ -43,7 +43,7 @@ function FvsView() {
         <Link to="/fvs/nova" search={{ id: f.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta FVS?")) { deleteInspection(f.id); nav({ to: "/fvs" }); } }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
-        <button className="btn-primary" disabled={busy} onClick={async () => { if (!ref.current) return; setBusy(true); try { await exportElementToPdf(ref.current, `FVS-${num}.pdf`); } catch { alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
+        <button className="btn-primary" disabled={busy} onClick={async () => { if (!ref.current) return; setBusy(true); try { await exportElementToPdf(ref.current, `FVS-${num}.pdf`, [f.obra, f.local].filter(Boolean).join(" — ")); } catch { alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>
 
       <article ref={ref} className="panel space-y-6">

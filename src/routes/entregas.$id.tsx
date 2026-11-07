@@ -77,6 +77,7 @@ function Report({ id }: { id: string }) {
               await exportElementToPdf(
                 ref.current,
                 `Entrega-${d.unit.apartment.replace(/[^\w-]/g, "") || id.slice(0, 8)}.pdf`,
+                [d.unit.development, d.unit.tower, d.unit.apartment && `Apto ${d.unit.apartment}`].filter(Boolean).join(" — "),
               );
             } catch {
               setError("Não foi possível gerar o PDF. Tente novamente.");
