@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { Check, X, Minus } from "lucide-react";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { exportElementToPdf } from "@/lib/pdf";
 import { loadCompany, type Company } from "@/lib/orders";
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/fvs/$id")({
   }),
   component: FvsView,
 });
+
+const resultIcon = { C: <Check className="h-5 w-5 text-success" strokeWidth={3} />, NC: <X className="h-5 w-5 text-destructive" strokeWidth={3} />, NA: <Minus className="h-5 w-5 text-warning" strokeWidth={3} /> };
 
 function FvsView() {
   const { id } = Route.useParams();
@@ -79,7 +82,7 @@ function FvsView() {
               {f.items.map((it, k) => (
                 <tr key={k} className="border-b border-border align-top">
                   <td className="py-2">{k + 1}. {it.text}{it.criteria && <p className="text-xs text-muted-foreground">Critério: {it.criteria}</p>}{it.note && <p className="text-xs text-muted-foreground">NC: {it.note}</p>}</td>
-                  <td className={`py-2 font-semibold ${it.result === "NC" ? "text-destructive" : ""}`}>{it.result ? resultLabel[it.result] : "—"}</td>
+                  <td className={`py-2 font-semibold ${it.result === "NC" ? "text-destructive" : ""}`}>{it.result ? <span className="inline-flex items-center gap-1">{resultIcon[it.result]}{resultLabel[it.result]}</span> : "—"}</td>
                 </tr>
               ))}
             </tbody>
