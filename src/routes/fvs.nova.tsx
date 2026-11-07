@@ -47,7 +47,7 @@ function NewFvs() {
   });
   const pick = (tid: string) => {
     const t = templates.find((x) => x.id === tid);
-    if (t) set({ templateName: t.name, items: t.items.map((text) => ({ text, result: null, note: "" })) });
+    if (t) set({ templateName: t.name, items: t.items.map((text, k) => ({ text, result: null, note: "", criteria: t.criteria?.[k] || "" })) });
   };
 
   const submit = (e: React.FormEvent) => {
@@ -83,7 +83,16 @@ function NewFvs() {
           {f.executor && f.templateName && (findContract(contractors, f.executor, f.templateName)
             ? <p className="text-xs text-primary">Valores preenchidos pelo contrato do empreiteiro.</p>
             : <p className="text-xs text-muted-foreground">Sem contrato para este serviço. <Link to="/empreiteiros" className="text-primary">Cadastrar empreiteiros →</Link></p>)}
-          <input className="field" inputMode="numeric" placeholder="Efetivo (nº de pessoas na atividade)" value={f.crew ?? ""} onChange={(e) => set({ crew: e.target.value })} />
+          <h3 className="eyebrow">Efetivo na atividade</h3>
+          {(f.crewList ?? []).map((m, k) => (
+            <div key={k} className="grid grid-cols-[5rem_1fr_auto] gap-2">
+              <input className="field" inputMode="numeric" placeholder="Qtd" value={m.qty} onChange={(e) => set({ crewList: (f.crewList ?? []).map((x, j) => (j === k ? { ...x, qty: e.target.value } : x)) })} />
+              <input className="field" list="funcoes" placeholder="Função (ex: Pedreiro)" value={m.role} onChange={(e) => set({ crewList: (f.crewList ?? []).map((x, j) => (j === k ? { ...x, role: e.target.value } : x)) })} />
+              <button type="button" className="btn-ghost" aria-label="Remover" onClick={() => set({ crewList: (f.crewList ?? []).filter((_, j) => j !== k) })}>×</button>
+            </div>
+          ))}
+          <datalist id="funcoes">{["Pedreiro", "Servente", "Carpinteiro", "Armador", "Eletricista", "Encanador", "Pintor", "Azulejista"].map((r) => <option key={r} value={r} />)}</datalist>
+          <button type="button" className="btn-ghost" onClick={() => set({ crewList: [...(f.crewList ?? []), { qty: "1", role: "" }] })}>+ Função</button>
           <div className="grid grid-cols-3 gap-3">
             <input className="field" placeholder="Unidade (m²)" value={f.unit ?? ""} onChange={(e) => set({ unit: e.target.value })} />
             <input className="field" inputMode="decimal" placeholder="Quantidade" value={f.quantity ?? ""} onChange={(e) => set({ quantity: e.target.value })} />
@@ -98,6 +107,7 @@ function NewFvs() {
             {f.items.map((it, k) => (
               <div key={k} className="space-y-2 border-b border-border pb-3 last:border-0">
                 <p className="font-medium">{k + 1}. {it.text}</p>
+                {it.criteria && <p className="text-xs text-muted-foreground">Critério: {it.criteria}</p>}
                 <div className="flex gap-2">
                   {opts.map((o) => (
                     <button type="button" key={o.v} onClick={() => set({ items: f.items.map((x, m) => (m === k ? { ...x, result: x.result === o.v ? null : o.v } : x)) })}

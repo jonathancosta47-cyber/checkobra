@@ -33,19 +33,20 @@ function Templates() {
               <input className="field flex-1 font-semibold" placeholder="Nome do serviço (ex: Reboco)" value={t.name} onChange={(e) => update(i, { ...t, name: e.target.value })} />
               <button type="button" className="btn-ghost" onClick={() => { if (confirm("Excluir este modelo?")) { setSaved(false); setList(list.filter((_, j) => j !== i)); } }}>Excluir</button>
             </div>
-            <h2 className="eyebrow">Itens a verificar</h2>
+            <h2 className="eyebrow">Itens a verificar · critério / tolerância</h2>
             {t.items.map((it, k) => (
-              <div key={k} className="flex gap-2">
-                <input className="field flex-1" value={it} placeholder={`Item ${k + 1}`} onChange={(e) => update(i, { ...t, items: t.items.map((x, m) => (m === k ? e.target.value : x)) })} />
-                <button type="button" className="btn-ghost" aria-label="Remover item" onClick={() => update(i, { ...t, items: t.items.filter((_, m) => m !== k) })}>×</button>
+              <div key={k} className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                <input className="field" value={it} placeholder={`Item ${k + 1}`} onChange={(e) => update(i, { ...t, items: t.items.map((x, m) => (m === k ? e.target.value : x)) })} />
+                <input className="field" value={t.criteria?.[k] ?? ""} placeholder="Tolerância (ex: até 2 cm)" onChange={(e) => { const c = t.items.map((_, m) => t.criteria?.[m] ?? ""); c[k] = e.target.value; update(i, { ...t, criteria: c }); }} />
+                <button type="button" className="btn-ghost" aria-label="Remover item" onClick={() => update(i, { ...t, items: t.items.filter((_, m) => m !== k), criteria: (t.criteria ?? []).filter((_, m) => m !== k) })}>×</button>
               </div>
             ))}
-            <button type="button" className="btn-ghost" onClick={() => update(i, { ...t, items: [...t.items, ""] })}>+ Item</button>
+            <button type="button" className="btn-ghost" onClick={() => update(i, { ...t, items: [...t.items, ""], criteria: [...t.items.map((_, m) => t.criteria?.[m] ?? ""), ""] })}>+ Item</button>
           </section>
         ))}
         <button type="button" className="btn-ghost w-full" onClick={() => { setSaved(false); setList([...list, { id: crypto.randomUUID(), name: "", items: [""] }]); }}>+ Novo modelo de FVS</button>
         <button type="button" className="btn-primary w-full" onClick={() => {
-          saveTemplates(list.map((t) => ({ ...t, name: t.name.trim() || "Sem nome", items: t.items.map((x) => x.trim()).filter(Boolean) })));
+          saveTemplates(list.map((t) => ({ ...t, name: t.name.trim() || "Sem nome", ...(() => { const keep = t.items.map((x, k): [string, string] => [x.trim(), (t.criteria?.[k] ?? "").trim()]).filter(([x]) => x); return { items: keep.map((x) => x[0]), criteria: keep.map((x) => x[1]) }; })() })));
           setList(loadTemplates()); setSaved(true);
         }}>{saved ? "Salvo ✓" : "Salvar modelos"}</button>
       </div>

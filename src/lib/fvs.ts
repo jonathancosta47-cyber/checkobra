@@ -1,10 +1,11 @@
 export type FvsResult = "C" | "NC" | "NA" | null;
-export interface FvsTemplate { id: string; name: string; items: string[] }
-export interface FvsItem { text: string; result: FvsResult; note: string }
+export interface FvsTemplate { id: string; name: string; items: string[]; criteria?: string[] }
+export interface FvsItem { text: string; result: FvsResult; note: string; criteria?: string }
+export interface CrewMember { role: string; qty: string }
 export interface FvsInspection {
   id: string; number: number; createdAt: string; templateName: string;
   obra: string; local: string; responsavel: string; items: FvsItem[];
-  observations: string; executor?: string; crew?: string; unit?: string; quantity?: string; unitPrice?: string; photos: string[]; signature: string | null; signedBy: string;
+  observations: string; executor?: string; crew?: string; crewList?: CrewMember[]; unit?: string; quantity?: string; unitPrice?: string; photos: string[]; signature: string | null; signedBy: string;
 }
 
 const TKEY = "os-manutencao:fvs-templates";
@@ -12,8 +13,8 @@ const IKEY = "os-manutencao:fvs";
 const read = <T,>(k: string, d: T): T => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
 
 const defaults: FvsTemplate[] = [
-  { id: "alvenaria", name: "Alvenaria de vedação", items: ["Locação conforme projeto", "Prumo e nível", "Espessura das juntas", "Amarração entre blocos", "Vergas e contravergas"] },
-  { id: "contrapiso", name: "Contrapiso", items: ["Limpeza da base", "Nível e caimento", "Espessura conforme projeto", "Ausência de fissuras", "Cura adequada"] },
+  { id: "alvenaria", name: "Alvenaria de vedação", items: ["Locação conforme projeto", "Prumo e nível", "Espessura das juntas", "Amarração entre blocos", "Vergas e contravergas"], criteria: ["Desvio máx. 1 cm", "Prumo até 0,5 cm", "Juntas de 1 a 2 cm", "Juntas desencontradas", "Apoio mín. 20 cm"] },
+  { id: "contrapiso", name: "Contrapiso", items: ["Limpeza da base", "Nível e caimento", "Espessura conforme projeto", "Ausência de fissuras", "Cura adequada"], criteria: ["Sem pó ou entulho", "Desnível até 0,5 cm", "Conforme projeto ±1 cm", "Sem fissuras visíveis", "Mín. 7 dias úmido"] },
 ];
 
 export const loadTemplates = (): FvsTemplate[] => read(TKEY, defaults);
