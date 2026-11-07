@@ -11,3 +11,4 @@
 
 - Apartment handover inspections use their own Cloud table with owner-scoped RLS; legacy OS/FVS storage remains unchanged to avoid implicit migration.
 - Keep delivery checklist definitions and validation in a browser-safe domain module, with persistence separate and shared form/report components behind leaf routes.
+- All reports share the PDF pagination helper and photo-row component; mark complete signature groups with data-pdf-block so PDF export and native print keep evidence intact.
