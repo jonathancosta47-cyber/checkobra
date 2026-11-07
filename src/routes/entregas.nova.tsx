@@ -41,7 +41,7 @@ function Page() {
     </main>
   );
 }
-function Editor({ id }: { id?: string }) {
+function Editor({ id }: { id: string | undefined }) {
   const [d, setD] = useState<Delivery | null>(null),
     [error, setError] = useState("");
   useEffect(() => {
