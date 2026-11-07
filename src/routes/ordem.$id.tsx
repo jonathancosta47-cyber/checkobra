@@ -59,16 +59,7 @@ function OrderView() {
       </div>
 
       <article ref={docRef} className="panel space-y-6">
-        {company && (company.logo || company.logo2 || company.name) && (
-          <div className="flex items-center gap-4">
-            {company.logo && <CompanyLogo src={company.logo} />}
-            <div>
-              {company.name && <p className="font-display text-lg font-bold">{company.name}</p>}
-              {company.info && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{company.info}</p>}
-            </div>
-            {company.logo2 && <div className="ml-auto"><CompanyLogo src={company.logo2} /></div>}
-          </div>
-        )}
+        <CompanyHeader company={company} />
         <header className="report-head flex items-start justify-between">
           <div>
             <p className="eyebrow">Ordem de Serviço</p>
