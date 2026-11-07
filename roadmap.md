@@ -6,5 +6,5 @@
 - [x] Verify save/edit/readback and PDF on desktop and mobile.
 
 # Intact report pagination
-- [ ] Keep photo rows and signatures intact in all PDF/print reports.
-- [ ] Test safe page boundaries and verify downloaded PDFs and native printing.
+- [x] Keep photo rows and signatures intact in all PDF/print reports.
+- [x] Test safe page boundaries and verify downloaded PDFs and native printing (OS and FVS; 15 intact photos and one intact signature each).
