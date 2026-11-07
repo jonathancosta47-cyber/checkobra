@@ -16,7 +16,7 @@ export const Route = createFileRoute("/empresa")({
   component: CompanyPage,
 });
 
-function LogoField({ label, src, onPick, onRemove }: { label: string; src?: string | null; onPick: (v: string) => void; onRemove: () => void }) {
+function LogoField({ label, src, onPick, onRemove }: { label: string; src: string | null | undefined; onPick: (v: string) => void; onRemove: () => void }) {
   return (
     <>
       <h2 className="eyebrow">{label}</h2>
