@@ -177,7 +177,7 @@ export const DeliveryReport = forwardRef<HTMLElement, { delivery: Delivery }>(
                   <div className="h-28" />
                 )}
                 <p className="border-t border-border pt-1 font-semibold">
-                  {s.name || "Não assinado"}
+                  {s.name || (s.image ? "Nome não informado" : "Não assinado")}
                 </p>
                 <p className="text-xs text-muted-foreground">{s.role}</p>
               </div>
