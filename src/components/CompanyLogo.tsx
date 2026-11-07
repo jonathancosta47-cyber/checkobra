@@ -7,13 +7,13 @@ export function fitLogo(w: number, h: number, maxW = 180, maxH = 72) {
   return { width: Math.round(w * s), height: Math.round(h * s) };
 }
 
-export function CompanyLogo({ src }: { src: string }) {
+export function CompanyLogo({ src, maxW = 180, maxH = 72 }: { src: string; maxW?: number; maxH?: number }) {
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   useEffect(() => {
     const img = new Image();
-    img.onload = () => setSize(fitLogo(img.naturalWidth, img.naturalHeight));
+    img.onload = () => setSize(fitLogo(img.naturalWidth, img.naturalHeight, maxW, maxH));
     img.src = src;
-  }, [src]);
+  }, [src, maxW, maxH]);
   if (!size) return null;
   return <img src={src} alt="Logotipo" width={size.width} height={size.height} style={{ width: size.width, height: size.height, maxWidth: "none" }} className="shrink-0" />;
 }

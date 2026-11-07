@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { DeliveryEvaluation } from "./DeliveryEvaluation";
 import { documentLabels, issuesOf, pendingCount, type Delivery } from "@/lib/delivery";
@@ -24,16 +24,7 @@ export const DeliveryReport = forwardRef<HTMLElement, { delivery: Delivery }>(
         ref={ref}
         className="delivery-report space-y-6 bg-card p-5 text-card-foreground sm:p-7"
       >
-        {company && (company.logo || company.logo2 || company.name) && (
-          <div className="flex flex-wrap items-center gap-4" data-pdf-block>
-            {company.logo && <CompanyLogo src={company.logo} />}
-            <div>
-              <p className="text-lg font-bold">{company.name}</p>
-              <p className="whitespace-pre-wrap text-xs text-muted-foreground">{company.info}</p>
-            </div>
-            {company.logo2 && <div className="ml-auto"><CompanyLogo src={company.logo2} /></div>}
-          </div>
-        )}
+        <CompanyHeader company={company} dataPdfBlock nameClass="text-lg font-bold" />
         <header className="report-head" data-pdf-block>
           <p className="text-sm">CheckObra · Vistoria técnica</p>
           <h1 className="text-2xl font-bold">Entrega de apartamento</h1>

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Check, X, Minus } from "lucide-react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
 import { loadCompany, type Company } from "@/lib/orders";
@@ -47,16 +47,7 @@ function FvsView() {
       </div>
 
       <article ref={ref} className="panel space-y-6">
-        {company && (company.logo || company.logo2 || company.name) && (
-          <div className="flex items-center gap-4">
-            {company.logo && <CompanyLogo src={company.logo} />}
-            <div>
-              {company.name && <p className="font-display text-lg font-bold">{company.name}</p>}
-              {company.info && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{company.info}</p>}
-            </div>
-            {company.logo2 && <div className="ml-auto"><CompanyLogo src={company.logo2} /></div>}
-          </div>
-        )}
+        <CompanyHeader company={company} />
         <header className="report-head">
           <p className="eyebrow">Ficha de Verificação de Serviço</p>
           <h1 className="font-display text-3xl font-bold">#{num} — {f.templateName}</h1>
