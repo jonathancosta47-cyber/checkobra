@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
-import { deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
+import { OrderCheckIcon } from "@/components/OrderCheckIcon";
+import { checkLabel, deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
 
 export const Route = createFileRoute("/ordem/$id")({
   head: () => ({
@@ -92,6 +93,23 @@ function OrderView() {
             </div>
           </dl>
         </section>
+
+        {(o.checks ?? []).some((c) => c.text) && (
+          <section>
+            <h2 className="report-section-title">Checklist do serviço</h2>
+            <table className="report-table w-full text-sm">
+              <thead><tr><th className="text-left">Item</th><th className="text-left">Situação</th></tr></thead>
+              <tbody>
+                {(o.checks ?? []).filter((c) => c.text).map((c, k) => (
+                  <tr key={k}>
+                    <td className="py-2">{c.text}</td>
+                    <td className="py-2 font-semibold">{c.result ? <span className="inline-flex items-center gap-1"><OrderCheckIcon r={c.result} />{checkLabel[c.result]}</span> : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         {o.photos.length > 0 && (
           <section>

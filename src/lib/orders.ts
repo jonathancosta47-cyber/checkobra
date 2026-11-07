@@ -1,5 +1,9 @@
 export type OrderStatus = "aberta" | "em_andamento" | "concluida";
 
+export type CheckResult = "C" | "A" | "P";
+export interface OrderCheck { text: string; result: CheckResult | null }
+export const checkLabel: Record<CheckResult, string> = { C: "Concluído", A: "Em andamento", P: "Pendente" };
+
 export interface ServiceOrder {
   id: string;
   number: number;
@@ -17,6 +21,7 @@ export interface ServiceOrder {
   openerName?: string;
   openerSignature?: string | null;
   techSignature?: string | null;
+  checks?: OrderCheck[];
 }
 
 const KEY = "os-manutencao:orders";

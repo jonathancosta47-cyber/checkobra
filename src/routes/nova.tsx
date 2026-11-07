@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SignaturePad } from "@/components/SignaturePad";
-import { compressImage, getOrder, nextNumber, saveOrder, type ServiceOrder } from "@/lib/orders";
+import { OrderCheckIcon } from "@/components/OrderCheckIcon";
+import { checkLabel, type CheckResult, compressImage, getOrder, nextNumber, saveOrder, type ServiceOrder } from "@/lib/orders";
 
 export const Route = createFileRoute("/nova")({
   validateSearch: (s: Record<string, unknown>): { id?: string } => (typeof s["id"] === "string" ? { id: s["id"] } : {}),
@@ -35,6 +36,7 @@ const empty = (): ServiceOrder => ({
   openerName: "",
   openerSignature: null,
   techSignature: null,
+  checks: [],
 });
 
 function NewOrder() {
@@ -99,6 +101,30 @@ function NewOrder() {
               <option value="concluida">Fechada</option>
             </select>
           </div>
+        </section>
+
+        <section className="panel space-y-3">
+          <h2 className="eyebrow">Checklist do serviço</h2>
+          {(o.checks ?? []).map((it, k) => {
+            const upd = (patch: Partial<typeof it>) => set({ checks: (o.checks ?? []).map((x, m) => (m === k ? { ...x, ...patch } : x)) });
+            return (
+              <div key={k} className="space-y-2 rounded-md border border-border p-3">
+                <div className="flex gap-2">
+                  <input className="field flex-1" placeholder={`Item ${k + 1}`} value={it.text} onChange={(e) => upd({ text: e.target.value })} />
+                  <button type="button" className="btn-ghost" onClick={() => set({ checks: (o.checks ?? []).filter((_, m) => m !== k) })}>×</button>
+                </div>
+                <div className="flex gap-2">
+                  {(["C", "A", "P"] as CheckResult[]).map((v) => (
+                    <button type="button" key={v} onClick={() => upd({ result: it.result === v ? null : v })}
+                      className={`btn-ghost flex-1 justify-center gap-1 ${it.result === v ? (v === "C" ? "border-success bg-success/15" : v === "P" ? "border-destructive bg-destructive/15" : "border-warning bg-warning/20") : ""}`}>
+                      <OrderCheckIcon r={v} />{checkLabel[v]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          <button type="button" className="btn-ghost w-full" onClick={() => set({ checks: [...(o.checks ?? []), { text: "", result: null }] })}>+ Adicionar item</button>
         </section>
 
         <section className="panel space-y-3">
