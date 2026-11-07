@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Gerador de ordens de serviço de manutenção." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#e8833a" },
+      { name: "theme-color", content: "#2F4A3A" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
