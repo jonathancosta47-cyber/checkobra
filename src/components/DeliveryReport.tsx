@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useState } from "react";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import { ReportPhotos } from "@/components/ReportPhotos";
 import { DeliveryEvaluation } from "./DeliveryEvaluation";
 import { documentLabels, issuesOf, pendingCount, type Delivery } from "@/lib/delivery";
 import { loadCompany, type Company } from "@/lib/orders";
@@ -104,16 +105,8 @@ export const DeliveryReport = forwardRef<HTMLElement, { delivery: Delivery }>(
                   Responsável: {item.owner} · Prazo: {item.deadline} · Status: {item.status}
                 </p>
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {item.photos.map((src, k) => (
-                  <img
-                    key={k}
-                    src={src}
-                    alt={`Pendência ${i + 1}, foto ${k + 1}`}
-                    data-pdf-block
-                    className="aspect-square w-full rounded-md object-cover"
-                  />
-                ))}
+              <div className="mt-2">
+                <ReportPhotos photos={item.photos} label={`Pendência ${i + 1}, foto`} />
               </div>
             </div>
           ))}
@@ -147,17 +140,7 @@ export const DeliveryReport = forwardRef<HTMLElement, { delivery: Delivery }>(
             <h2 className="report-section-title" data-pdf-block>
               Registro fotográfico final
             </h2>
-            <div className="grid grid-cols-3 gap-2">
-              {d.photos.map((src, i) => (
-                <img
-                  data-pdf-block
-                  key={i}
-                  src={src}
-                  alt={`Registro final ${i + 1}`}
-                  className="aspect-square w-full object-cover"
-                />
-              ))}
-            </div>
+            <ReportPhotos photos={d.photos} label="Registro final" />
           </section>
         )}
         <section>

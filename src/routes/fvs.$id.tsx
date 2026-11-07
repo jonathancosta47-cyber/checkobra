@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Check, X, Minus } from "lucide-react";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
 import { loadCompany, type Company } from "@/lib/orders";
 import { deleteInspection, getInspection, resultLabel, fvsTotal, brl, parseNum, type FvsInspection } from "@/lib/fvs";
@@ -42,7 +43,7 @@ function FvsView() {
         <Link to="/fvs/nova" search={{ id: f.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta FVS?")) { deleteInspection(f.id); nav({ to: "/fvs" }); } }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
-        <button className="btn-primary" disabled={busy} onClick={async () => { setBusy(true); try { await exportElementToPdf(ref.current!, `FVS-${num}.pdf`); } catch { alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
+        <button className="btn-primary" disabled={busy} onClick={async () => { if (!ref.current) return; setBusy(true); try { await exportElementToPdf(ref.current, `FVS-${num}.pdf`); } catch { alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>
 
       <article ref={ref} className="panel space-y-6">
@@ -93,11 +94,11 @@ function FvsView() {
         {f.photos.length > 0 && (
           <section>
             <h2 className="report-section-title">Fotos</h2>
-            <div className="grid grid-cols-3 gap-2">{f.photos.map((p, i) => <img key={i} src={p} alt={`Foto ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />)}</div>
+            <ReportPhotos photos={f.photos} />
           </section>
         )}
 
-        <section className="border-t border-border pt-4">
+        <section className="border-t border-border pt-4" data-pdf-block>
           <h2 className="report-section-title">Responsável</h2>
           {f.signature ? <img src={f.signature} alt="Assinatura" className="h-32 w-full max-w-sm object-contain" /> : <div className="h-24 max-w-sm" />}
           <div className="max-w-sm border-t border-foreground pt-1 text-sm">{f.signedBy || "Assinatura do responsável"}</div>
