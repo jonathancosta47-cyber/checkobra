@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase CLI (estado local) e variáveis de ambiente — use .env.example como modelo
+supabase/.temp/
+.env
+.env.*
+!.env.example

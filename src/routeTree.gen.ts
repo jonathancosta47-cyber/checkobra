@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmpreiteirosRouteImport } from './routes/empreiteiros'
 import { Route as EmpresaRouteImport } from './routes/empresa'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as EntregasIndexRouteImport } from './routes/entregas.index'
 import { Route as EntregasIdRouteImport } from './routes/entregas.$id'
@@ -36,6 +37,11 @@ const EmpreiteirosRoute = EmpreiteirosRouteImport.update({
 const EmpresaRoute = EmpresaRouteImport.update({
   id: '/empresa',
   path: '/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NovaRoute = NovaRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
+  '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
+  '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
+  '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/'
     | '/empreiteiros'
     | '/empresa'
+    | '/login'
     | '/nova'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/'
     | '/empreiteiros'
     | '/empresa'
+    | '/login'
     | '/nova'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/'
     | '/empreiteiros'
     | '/empresa'
+    | '/login'
     | '/nova'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmpreiteirosRoute: typeof EmpreiteirosRoute
   EmpresaRoute: typeof EmpresaRoute
+  LoginRoute: typeof LoginRoute
   NovaRoute: typeof NovaRoute
   EntregasIdRoute: typeof EntregasIdRoute
   EntregasNovaRoute: typeof EntregasNovaRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/empresa'
       fullPath: '/empresa'
       preLoaderRoute: typeof EmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nova': {
@@ -299,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmpreiteirosRoute: EmpreiteirosRoute,
   EmpresaRoute: EmpresaRoute,
+  LoginRoute: LoginRoute,
   NovaRoute: NovaRoute,
   EntregasIdRoute: EntregasIdRoute,
   EntregasNovaRoute: EntregasNovaRoute,
