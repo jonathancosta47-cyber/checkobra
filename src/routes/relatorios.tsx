@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FileDown } from "lucide-react";
 import { loadOrders, type ServiceOrder } from "@/lib/orders";
-import { loadInspections, type FvsInspection } from "@/lib/fvs";
+import { listarInspecoes } from "@/lib/fvs-store";
+import type { InspecaoResumo } from "@/lib/fvs-db";
 import { listDeliveries } from "@/lib/delivery-store";
 import type { Delivery } from "@/lib/delivery";
 import { filtrarRelatorios, MODULOS, registros, type Modulo } from "@/lib/modules";
@@ -30,7 +31,7 @@ const MODULOS_FILTRO: { v: FiltroModulo; l: string }[] = [
 
 function Relatorios() {
   const [os, setOs] = useState<ServiceOrder[]>([]);
-  const [fvs, setFvs] = useState<FvsInspection[]>([]);
+  const [fvs, setFvs] = useState<InspecaoResumo[]>([]);
   const [vistorias, setVistorias] = useState<Delivery[]>([]);
   const [erroVistorias, setErroVistorias] = useState(false);
   const [modulo, setModulo] = useState<FiltroModulo>("todos");
@@ -40,7 +41,9 @@ function Relatorios() {
 
   useEffect(() => {
     setOs(loadOrders());
-    setFvs(loadInspections());
+    listarInspecoes()
+      .then(setFvs)
+      .catch(() => setFvs([]));
     listDeliveries()
       .then(setVistorias)
       .catch(() => setErroVistorias(true));

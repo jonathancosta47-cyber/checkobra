@@ -1,158 +1,214 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Check, X, Minus } from "lucide-react";
-import { SignaturePad } from "@/components/SignaturePad";
-import { compressImage } from "@/lib/orders";
-import { getInspection, loadTemplates, nextFvsNumber, fvsTotal, brl, loadContractors, findContract, type Contractor, saveInspection, type FvsInspection, type FvsResult, type FvsTemplate } from "@/lib/fvs";
+import { Building2, Check, ChevronLeft, ChevronRight, ClipboardList, MapPin } from "lucide-react";
+import { criarInspecao, listarLocais, listarModelos, listarObras } from "@/lib/fvs-store";
+import { caminhoDoLocal, filhosDe, nomeDoCaminho, PROXIMO_TIPO, TIPO_ROTULO, type Local, type Modelo, type Obra } from "@/lib/fvs-db";
+import { Pagina } from "@/components/modulos";
+import { PerfilGate } from "@/components/PerfilGate";
 
 export const Route = createFileRoute("/fvs/nova")({
-  validateSearch: (s: Record<string, unknown>): { id?: string } => (typeof s["id"] === "string" ? { id: s["id"] } : {}),
   head: () => ({
     meta: [
-      { title: "Nova FVS — Vistoria de obra" },
-      { name: "description", content: "Preencha a ficha de verificação de serviço da obra." },
-      { property: "og:title", content: "Nova FVS — Vistoria de obra" },
-      { property: "og:description", content: "Checklist de vistoria com fotos e assinatura." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { title: "Nova FVS — CheckObra" },
+      { name: "description", content: "Escolha a obra, o local e o modelo da ficha de verificação." },
     ],
   }),
-  component: NewFvs,
+  component: Page,
 });
 
-const opts: { v: Exclude<FvsResult, null>; l: string }[] = [{ v: "C", l: "C" }, { v: "NC", l: "NC" }, { v: "NA", l: "N/A" }];
+function Page() {
+  return (
+    <Pagina className="pt-5">
+      <PerfilGate>
+        <NovaFvs />
+      </PerfilGate>
+    </Pagina>
+  );
+}
 
-const resultIcon = { C: <Check className="h-5 w-5 text-success" strokeWidth={3} />, NC: <X className="h-5 w-5 text-destructive" strokeWidth={3} />, NA: <Minus className="h-5 w-5 text-warning" strokeWidth={3} /> };
+type Passo = "obra" | "local" | "modelo";
+const PASSOS: { p: Passo; l: string }[] = [
+  { p: "obra", l: "Obra" },
+  { p: "local", l: "Local" },
+  { p: "modelo", l: "Modelo" },
+];
 
-function NewFvs() {
-  const { id } = Route.useSearch();
-  const nav = useNavigate();
-  const [templates, setTemplates] = useState<FvsTemplate[]>([]);
-  const [f, setF] = useState<FvsInspection | null>(null);
-  const [contractors, setContractors] = useState<Contractor[]>([]);
+function NovaFvs() {
+  const navigate = useNavigate();
+  const [obras, setObras] = useState<Obra[] | null>(null);
+  const [modelos, setModelos] = useState<Modelo[]>([]);
+  const [locais, setLocais] = useState<Local[]>([]);
+  const [erro, setErro] = useState("");
+  const [obra, setObra] = useState<Obra | null>(null);
+  const [paiId, setPaiId] = useState<string | null>(null); // nível sendo mostrado
+  const [local, setLocal] = useState<Local | null>(null);
+  const [criando, setCriando] = useState(false);
+  const passo: Passo = !obra ? "obra" : !local ? "local" : "modelo";
 
   useEffect(() => {
-    setTemplates(loadTemplates());
-    setContractors(loadContractors());
-    const ex = id ? getInspection(id) : undefined;
-    setF(ex ?? { id: crypto.randomUUID(), number: nextFvsNumber(), createdAt: new Date().toISOString(), templateName: "", obra: "", local: "", responsavel: "", items: [], observations: "", photos: [], signature: null, signedBy: "" });
-  }, [id]);
+    Promise.all([listarObras(), listarModelos()])
+      .then(([o, m]) => {
+        setObras(o.filter((x) => x.status === "ativa"));
+        setModelos(m.filter((x) => x.ativo && x.itens.length));
+      })
+      .catch(() => setErro("Não foi possível carregar obras e modelos."));
+  }, []);
 
-  if (!f) return null;
-  const set = (p: Partial<FvsInspection>) => setF((c) => {
-    if (!c) return c;
-    const n = { ...c, ...p };
-    if ("executor" in p || "templateName" in p) {
-      const k = findContract(contractors, n.executor, n.templateName);
-      if (k) { n.unit = k.unit; n.unitPrice = k.unitPrice; }
+  const escolherObra = async (o: Obra) => {
+    setErro("");
+    try {
+      setLocais(await listarLocais([o.id]));
+      setObra(o);
+      setPaiId(null);
+    } catch {
+      setErro("Não foi possível carregar os locais desta obra.");
     }
-    return n;
-  });
-  const pick = (tid: string) => {
-    const t = templates.find((x) => x.id === tid);
-    if (t) set({ templateName: t.name, items: t.items.map((text, k) => ({ text, result: null, note: "", criteria: t.criteria?.[k] || "" })) });
   };
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!f.templateName) return alert("Escolha um modelo de FVS.");
-    try { saveInspection(f); nav({ to: "/fvs/$id", params: { id: f.id } }); }
-    catch { alert("Armazenamento cheio. Remova algumas fotos ou vistorias antigas."); }
+  const voltar = () => {
+    if (local) return setLocal(null);
+    if (paiId) return setPaiId(locais.find((l) => l.id === paiId)?.pai_id ?? null);
+    setObra(null);
   };
+
+  const comecar = async (m: Modelo) => {
+    if (!obra || !local) return;
+    setCriando(true);
+    setErro("");
+    try {
+      const id = await criarInspecao(obra.id, local.id, m);
+      navigate({ to: "/fvs/$id", params: { id }, replace: true });
+    } catch {
+      setErro("Não foi possível criar a FVS. Tente de novo.");
+      setCriando(false);
+    }
+  };
+
+  const caminhoAtual = paiId ? caminhoDoLocal(locais, paiId) : [];
+  const nivel = filhosDe(locais, paiId);
+  const pai = paiId ? locais.find((l) => l.id === paiId) : undefined;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-6 pt-5">
-      <h1 className="mb-5 font-display text-3xl font-bold">FVS <span className="text-obra-laranja-texto">#{String(f.number).padStart(4, "0")}</span></h1>
-      <form onSubmit={submit} className="space-y-5">
-        <section className="panel space-y-3">
-          <h2 className="eyebrow">Identificação</h2>
-          <select className="field" value={templates.find((t) => t.name === f.templateName)?.id ?? ""} onChange={(e) => pick(e.target.value)}>
-            <option value="" disabled>{f.templateName || "Escolha o serviço (modelo de FVS) *"}</option>
-            {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-          <Link to="/fvs/modelos" className="text-sm text-obra-laranja-texto">Criar ou editar modelos de FVS →</Link>
-          <input className="field" placeholder="Obra" value={f.obra} onChange={(e) => set({ obra: e.target.value })} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input className="field" placeholder="Local (bloco, pavimento, unidade)" value={f.local} onChange={(e) => set({ local: e.target.value })} />
-            <input className="field" placeholder="Responsável pela vistoria" value={f.responsavel} onChange={(e) => set({ responsavel: e.target.value })} />
+    <div className="space-y-4">
+      {/* passos */}
+      <ol className="grid grid-cols-3 gap-2" aria-label="Passos">
+        {PASSOS.map(({ p, l }, k) => {
+          const feito = PASSOS.findIndex((x) => x.p === passo) > k;
+          const atual = p === passo;
+          return (
+            <li key={p} aria-current={atual ? "step" : undefined} className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-bold ${atual ? "bg-obra-laranja text-obra-grafite" : feito ? "bg-obra-bege text-obra-grafite" : "bg-obra-card text-obra-suave"}`}>
+              {feito ? <Check className="h-4 w-4" aria-hidden /> : <span aria-hidden>{k + 1}.</span>} {l}
+            </li>
+          );
+        })}
+      </ol>
+
+      {/* resumo do que já foi escolhido */}
+      {obra && (
+        <div className="obra-card flex items-center gap-3 p-3">
+          <button type="button" onClick={voltar} className="obra-icone-btn bg-obra-bege" aria-label="Voltar um passo">
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          </button>
+          <div className="min-w-0 text-sm">
+            <p className="truncate font-extrabold text-obra-grafite">{obra.nome}</p>
+            <p className="truncate text-obra-suave">{local ? nomeDoCaminho(caminhoDoLocal(locais, local.id)) : nomeDoCaminho(caminhoAtual) || "Escolha o local"}</p>
           </div>
+        </div>
+      )}
+
+      {erro && <p role="alert" className="obra-alerta-erro">{erro}</p>}
+
+      {passo === "obra" && (
+        <section aria-label="Escolha a obra">
+          <h2 className="mb-3 text-lg font-extrabold text-obra-grafite">Em qual obra?</h2>
+          {obras === null ? (
+            <p role="status" className="text-obra-suave">Carregando…</p>
+          ) : obras.length === 0 ? (
+            <p className="obra-card p-5 text-sm text-obra-suave">Nenhuma obra ativa cadastrada na sua empresa. Peça a um admin ou engenheiro para cadastrar.</p>
+          ) : (
+            <ul className="space-y-3">
+              {obras.map((o) => (
+                <li key={o.id}>
+                  <Opcao icone={<Building2 className="h-6 w-6" aria-hidden />} titulo={o.nome} detalhe={o.endereco} onClick={() => escolherObra(o)} />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
+      )}
 
-        <section className="panel space-y-3">
-          <h2 className="eyebrow">Execução e medição</h2>
-          <input className="field" list="empreiteiros" placeholder="Responsável pela execução (empreiteiro)" value={f.executor ?? ""} onChange={(e) => set({ executor: e.target.value })} />
-          <datalist id="empreiteiros">{contractors.map((c) => <option key={c.id} value={c.name} />)}</datalist>
-          {f.executor && f.templateName && (findContract(contractors, f.executor, f.templateName)
-            ? <p className="text-xs text-obra-laranja-texto">Valores preenchidos pelo contrato do empreiteiro.</p>
-            : <p className="text-xs text-muted-foreground">Sem contrato para este serviço. <Link to="/fvs/empreiteiros" className="text-obra-laranja-texto">Cadastrar empreiteiros →</Link></p>)}
-          <h3 className="eyebrow">Efetivo na atividade</h3>
-          {(f.crewList ?? []).map((m, k) => (
-            <div key={k} className="grid grid-cols-[5rem_1fr_auto] gap-2">
-              <input className="field" inputMode="numeric" placeholder="Qtd" value={m.qty} onChange={(e) => set({ crewList: (f.crewList ?? []).map((x, j) => (j === k ? { ...x, qty: e.target.value } : x)) })} />
-              <input className="field" list="funcoes" placeholder="Função (ex: Pedreiro)" value={m.role} onChange={(e) => set({ crewList: (f.crewList ?? []).map((x, j) => (j === k ? { ...x, role: e.target.value } : x)) })} />
-              <button type="button" className="btn-ghost" aria-label="Remover" onClick={() => set({ crewList: (f.crewList ?? []).filter((_, j) => j !== k) })}>×</button>
-            </div>
-          ))}
-          <datalist id="funcoes">{["Pedreiro", "Servente", "Carpinteiro", "Armador", "Eletricista", "Encanador", "Pintor", "Azulejista"].map((r) => <option key={r} value={r} />)}</datalist>
-          <button type="button" className="btn-ghost" onClick={() => set({ crewList: [...(f.crewList ?? []), { qty: "1", role: "" }] })}>+ Função</button>
-          <div className="grid grid-cols-3 gap-3">
-            <input className="field" placeholder="Unidade (m²)" value={f.unit ?? ""} onChange={(e) => set({ unit: e.target.value })} />
-            <input className="field" inputMode="decimal" placeholder="Quantidade" value={f.quantity ?? ""} onChange={(e) => set({ quantity: e.target.value })} />
-            <input className="field" inputMode="decimal" placeholder="Valor unit. (R$)" value={f.unitPrice ?? ""} onChange={(e) => set({ unitPrice: e.target.value })} />
-          </div>
-          <p className="text-right font-display text-xl font-bold">Total: <span className="text-obra-laranja-texto">{brl(fvsTotal(f))}</span></p>
+      {passo === "local" && (
+        <section aria-label="Escolha o local">
+          <h2 className="mb-3 text-lg font-extrabold text-obra-grafite">
+            {pai ? `${pai.nome}: escolha ${PROXIMO_TIPO[pai.tipo] === "unidade" ? "a unidade" : "o pavimento"}` : "Escolha a torre"}
+          </h2>
+          {pai && (
+            <button type="button" className="obra-btn-claro mb-3 w-full justify-start border-obra-laranja" onClick={() => setLocal(pai)}>
+              <MapPin className="h-5 w-5" aria-hidden /> Inspecionar {pai.tipo === "torre" ? "a torre inteira" : "o pavimento inteiro"}: {pai.nome}
+            </button>
+          )}
+          {nivel.length === 0 ? (
+            <p className="obra-card p-5 text-sm text-obra-suave">Nenhum local cadastrado aqui.</p>
+          ) : (
+            <ul className={pai?.tipo === "pavimento" ? "grid grid-cols-2 gap-3 sm:grid-cols-3" : "space-y-3"}>
+              {nivel.map((l) => {
+                const temFilhos = filhosDe(locais, l.id).length > 0;
+                return (
+                  <li key={l.id}>
+                    <Opcao
+                      titulo={l.nome}
+                      detalhe={temFilhos ? `${filhosDe(locais, l.id).length} ${PROXIMO_TIPO[l.tipo] === "unidade" ? "unidades" : "pavimentos"}` : TIPO_ROTULO[l.tipo]}
+                      onClick={() => (temFilhos ? setPaiId(l.id) : setLocal(l))}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
+      )}
 
-        {f.items.length > 0 && (
-          <section className="panel space-y-4">
-            <h2 className="eyebrow">Verificação — C: conforme · NC: não conforme · N/A</h2>
-            {f.items.map((it, k) => (
-              <div key={k} className="space-y-2 border-b border-border pb-3 last:border-0">
-                <p className="font-medium">{k + 1}. {it.text}</p>
-                {it.criteria && <p className="text-xs text-muted-foreground">Critério: {it.criteria}</p>}
-                <div className="flex gap-2">
-                  {opts.map((o) => (
-                    <button type="button" key={o.v} onClick={() => set({ items: f.items.map((x, m) => (m === k ? { ...x, result: x.result === o.v ? null : o.v } : x)) })}
-                      className={`btn-ghost flex-1 justify-center gap-1 ${it.result === o.v ? (o.v === "C" ? "border-success bg-success/15" : o.v === "NC" ? "border-destructive bg-destructive/15" : "border-warning bg-warning/20") : ""}`}>{resultIcon[o.v]}{o.l}</button>
-                  ))}
-                </div>
-                {it.result === "NC" && (
-                  <input className="field" placeholder="Descreva a não conformidade" value={it.note} onChange={(e) => set({ items: f.items.map((x, m) => (m === k ? { ...x, note: e.target.value } : x)) })} />
-                )}
-              </div>
-            ))}
-            <textarea className="field min-h-20" placeholder="Observações gerais" value={f.observations} onChange={(e) => set({ observations: e.target.value })} />
-          </section>
-        )}
-
-        <section className="panel space-y-3">
-          <h2 className="eyebrow">Fotos</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {f.photos.map((p, i) => (
-              <div key={i} className="relative aspect-square overflow-hidden rounded-md">
-                <img src={p} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
-                <button type="button" onClick={() => set({ photos: f.photos.filter((_, j) => j !== i) })} className="absolute right-1 top-1 rounded-full bg-foreground/80 px-2 text-sm text-background">×</button>
-              </div>
-            ))}
-            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border text-sm text-muted-foreground">
-              <span className="text-2xl text-obra-laranja-texto">+</span>Adicionar
-              <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
-                const files = e.target.files; if (!files) return;
-                const imgs = await Promise.all(Array.from(files).map((x) => compressImage(x)));
-                setF((c) => (c ? { ...c, photos: [...c.photos, ...imgs] } : c));
-              }} />
-            </label>
-          </div>
+      {passo === "modelo" && (
+        <section aria-label="Escolha o modelo">
+          <h2 className="mb-3 text-lg font-extrabold text-obra-grafite">Qual serviço vai verificar?</h2>
+          {modelos.length === 0 ? (
+            <p className="obra-card p-5 text-sm text-obra-suave">Nenhum modelo de FVS ativo na sua empresa.</p>
+          ) : (
+            <ul className="space-y-3">
+              {modelos.map((m) => (
+                <li key={m.id}>
+                  <Opcao
+                    icone={<ClipboardList className="h-6 w-6" aria-hidden />}
+                    titulo={m.nome}
+                    detalhe={`${m.itens.length} itens a verificar`}
+                    onClick={() => comecar(m)}
+                    desabilitado={criando}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+          {criando && <p role="status" className="mt-3 text-center text-obra-suave">Criando a FVS…</p>}
         </section>
+      )}
+    </div>
+  );
+}
 
-        <section className="panel space-y-3">
-          <h2 className="eyebrow">Assinatura do responsável</h2>
-          <input className="field" placeholder="Nome de quem assina" value={f.signedBy} onChange={(e) => set({ signedBy: e.target.value })} />
-          <SignaturePad value={f.signature} onChange={(signature) => set({ signature })} />
-        </section>
-
-        <button type="submit" className="btn-primary w-full">Salvar FVS</button>
-      </form>
-    </main>
+function Opcao({ titulo, detalhe, onClick, icone, desabilitado }: { titulo: string; detalhe?: string; onClick: () => void; icone?: React.ReactNode; desabilitado?: boolean }) {
+  return (
+    <button
+      type="button"
+      disabled={desabilitado}
+      onClick={onClick}
+      className="obra-card flex min-h-16 w-full items-center gap-3 p-4 text-left transition active:scale-[0.99] disabled:opacity-60"
+    >
+      {icone && <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-obra-bege text-obra-grafite">{icone}</span>}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-extrabold text-obra-grafite">{titulo}</span>
+        {detalhe && <span className="block truncate text-sm text-obra-suave">{detalhe}</span>}
+      </span>
+      <ChevronRight className="h-5 w-5 shrink-0 text-obra-suave" aria-hidden />
+    </button>
   );
 }

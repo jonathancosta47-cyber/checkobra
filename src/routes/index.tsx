@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { loadOrders, type ServiceOrder } from "@/lib/orders";
-import { loadInspections, type FvsInspection } from "@/lib/fvs";
+import { listarInspecoes } from "@/lib/fvs-store";
+import type { InspecaoResumo } from "@/lib/fvs-db";
 import { listDeliveries } from "@/lib/delivery-store";
 import type { Delivery } from "@/lib/delivery";
 import { atividadesRecentes, contarPendencias, MODULOS, registros, type Modulo } from "@/lib/modules";
@@ -30,13 +31,15 @@ const TEXTO_PENDENCIA: Record<Modulo, (n: number) => string> = {
 
 function Inicio() {
   const [os, setOs] = useState<ServiceOrder[]>([]);
-  const [fvs, setFvs] = useState<FvsInspection[]>([]);
+  const [fvs, setFvs] = useState<InspecaoResumo[]>([]);
   const [vistorias, setVistorias] = useState<Delivery[] | null>(null); // null = carregando ou indisponível
   const [vistoriasErro, setVistoriasErro] = useState(false);
 
   useEffect(() => {
     setOs(loadOrders());
-    setFvs(loadInspections());
+    listarInspecoes()
+      .then(setFvs)
+      .catch(() => setFvs([]));
     listDeliveries()
       .then(setVistorias)
       .catch(() => setVistoriasErro(true));

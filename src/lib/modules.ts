@@ -1,7 +1,7 @@
 // Regras dos 3 módulos (OS, Vistorias de entrega, FVS) e da área de Relatórios.
 // Só lógica, sem tela e sem acesso a banco: fácil de testar e de reaproveitar.
 import { pendingCount, type Delivery } from "./delivery";
-import type { FvsInspection } from "./fvs";
+import { numeroFvs, progresso, type InspecaoResumo } from "./fvs-db";
 import type { OrderStatus, ServiceOrder } from "./orders";
 
 export type Modulo = "os" | "vistorias" | "fvs";
@@ -34,11 +34,11 @@ export const destinoDoMais = (pathname: string) => {
 
 // ───────────── pendências e progresso ─────────────
 
-export const ncDaFvs = (f: FvsInspection) => f.items.filter((i) => i.result === "NC").length;
+export const ncDaFvs = (f: InspecaoResumo) => f.nc;
 
 export const osPendente = (o: ServiceOrder) => o.status !== "concluida";
 export const vistoriaPendente = (d: Delivery) => pendingCount(d) > 0;
-export const fvsPendente = (f: FvsInspection) => ncDaFvs(f) > 0;
+export const fvsPendente = (f: InspecaoResumo) => f.nc > 0;
 
 const pct = (feitos: number, total: number) => (total ? Math.round((feitos / total) * 100) : 0);
 
@@ -51,18 +51,18 @@ export function progressoVistoria(d: Delivery) {
   const itens = d.rooms.flatMap((r) => r.items);
   return pct(itens.filter((i) => i.result !== null).length, itens.length);
 }
-export const progressoFvs = (f: FvsInspection) => pct(f.items.filter((i) => i.result !== null).length, f.items.length);
+export const progressoFvs = (f: InspecaoResumo) => progresso(f);
 
 // ───────────── obras (para filtros) ─────────────
 
 export const obraDaOS = (o: ServiceOrder) => o.client.address.trim() || o.client.name.trim();
 export const obraDaVistoria = (d: Delivery) => d.unit.development.trim();
-export const obraDaFvs = (f: FvsInspection) => f.obra.trim();
+export const obraDaFvs = (f: InspecaoResumo) => f.obra.trim();
 
 const unicas = (xs: string[]) => [...new Set(xs.filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
 export const obrasDasVistorias = (ds: Delivery[]) => unicas(ds.map(obraDaVistoria));
-export const obrasDasFvs = (fs: FvsInspection[]) => unicas(fs.map(obraDaFvs));
-export const modelosDasFvs = (fs: FvsInspection[]) => unicas(fs.map((f) => f.templateName));
+export const obrasDasFvs = (fs: InspecaoResumo[]) => unicas(fs.map(obraDaFvs));
+export const modelosDasFvs = (fs: InspecaoResumo[]) => unicas(fs.map((f) => f.modelo));
 
 // ───────────── filtros de cada módulo ─────────────
 
@@ -85,13 +85,18 @@ export function filtrarVistorias(list: Delivery[], f: { q?: string; pendencia?: 
   );
 }
 
-export function filtrarFvs(list: FvsInspection[], f: { q?: string; nc?: FiltroPendencia; obra?: string; modelo?: string }) {
+export type FiltroStatusFvs = "todas" | "rascunho" | "concluida";
+export function filtrarFvs(
+  list: InspecaoResumo[],
+  f: { q?: string; nc?: FiltroPendencia; obra?: string; modelo?: string; status?: FiltroStatusFvs },
+) {
   return list.filter(
     (i) =>
       (!f.nc || f.nc === "todas" || (f.nc === "com") === fvsPendente(i)) &&
+      (!f.status || f.status === "todas" || i.status === f.status) &&
       (!f.obra || obraDaFvs(i) === f.obra) &&
-      (!f.modelo || i.templateName === f.modelo) &&
-      (!f.q || contem(`${i.number} ${i.templateName} ${i.obra} ${i.local} ${i.responsavel}`, f.q)),
+      (!f.modelo || i.modelo === f.modelo) &&
+      (!f.q || contem(`${i.numero} ${i.modelo} ${i.obra} ${i.local}`, f.q)),
   );
 }
 
@@ -111,7 +116,7 @@ export interface Registro {
 const num = (n: number) => `#${String(n).padStart(4, "0")}`;
 const statusOS: Record<OrderStatus, string> = { aberta: "Aberta", em_andamento: "Em andamento", concluida: "Fechada" };
 
-export function registros(os: ServiceOrder[], vistorias: Delivery[], fvs: FvsInspection[]): Registro[] {
+export function registros(os: ServiceOrder[], vistorias: Delivery[], fvs: InspecaoResumo[]): Registro[] {
   return [
     ...os.map((o) => ({
       modulo: "os" as const,
@@ -136,12 +141,12 @@ export function registros(os: ServiceOrder[], vistorias: Delivery[], fvs: FvsIns
     ...fvs.map((i) => ({
       modulo: "fvs" as const,
       id: i.id,
-      titulo: `FVS ${num(i.number)} · ${i.templateName || "Sem modelo"}`,
+      titulo: `${numeroFvs(i.numero)} · ${i.modelo || "Sem modelo"}`,
       detalhe: [i.obra, i.local].filter(Boolean).join(" · ") || "—",
       obra: obraDaFvs(i),
-      data: i.createdAt,
+      data: i.criadaEm,
       pendente: fvsPendente(i),
-      situacao: ncDaFvs(i) ? `${ncDaFvs(i)} NC` : "Conforme",
+      situacao: i.nc ? `${i.nc} NC` : i.status === "rascunho" ? "Em andamento" : "Conforme",
     })),
   ];
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Delivery, DeliveryItem } from "@/lib/delivery";
-import type { FvsInspection } from "@/lib/fvs";
+import type { InspecaoResumo } from "@/lib/fvs-db";
 import type { ServiceOrder } from "@/lib/orders";
 import {
   atividadesRecentes,
@@ -31,9 +31,9 @@ const vistoria = (p: Partial<Delivery> & { itens?: DeliveryItem[] }): Delivery =
   rooms: [{ id: "r", name: "Sala", items: p.itens ?? [] }],
   documents: [], result: "", observations: "", photos: [], signatures: [], ...p,
 });
-const fvs = (p: Partial<FvsInspection>): FvsInspection => ({
-  id: "f", number: 1, createdAt: "2026-11-03T12:00:00", templateName: "Alvenaria", obra: "Edifício Jardins", local: "Torre A",
-  responsavel: "", items: [], observations: "", photos: [], signature: null, signedBy: "", ...p,
+const fvs = (p: Partial<InspecaoResumo>): InspecaoResumo => ({
+  id: "f", numero: 1, status: "concluida", criadaEm: "2026-11-03T12:00:00", concluidaEm: null, inspetorId: "u",
+  obraId: "o", obra: "Edifício Jardins", localId: "l", local: "Torre A", modelo: "Alvenaria", total: 0, respondidos: 0, nc: 0, ...p,
 });
 
 describe("botão + e módulo atual", () => {
@@ -53,7 +53,7 @@ describe("pendências e progresso", () => {
   const dados = registros(
     [os({ id: "a", status: "aberta" }), os({ id: "b", status: "em_andamento" }), os({ id: "c", status: "concluida" })],
     [vistoria({ id: "v1", itens: [item("NC", "Aberta"), item("C")] }), vistoria({ id: "v2", itens: [item("NC", "Encerrada")] })],
-    [fvs({ id: "f1", items: [{ text: "a", result: "NC", note: "" }] }), fvs({ id: "f2", items: [{ text: "a", result: "C", note: "" }] })],
+    [fvs({ id: "f1", total: 1, respondidos: 1, nc: 1 }), fvs({ id: "f2", total: 1, respondidos: 1, nc: 0 })],
   );
 
   it("conta OS não fechadas, unidades com pendência aberta e fichas com NC", () => {
@@ -64,8 +64,8 @@ describe("pendências e progresso", () => {
     expect(progressoOS(os({ status: "concluida" }))).toBe(100);
     expect(progressoOS(os({ checks: [{ text: "a", result: "C" }, { text: "b", result: "P" }] }))).toBe(50);
     expect(progressoVistoria(vistoria({ itens: [item("C"), item(null), item("NC"), item(null)] }))).toBe(50);
-    expect(progressoFvs(fvs({ items: [{ text: "a", result: "C", note: "" }, { text: "b", result: null, note: "" }, { text: "c", result: null, note: "" }] }))).toBe(33);
-    expect(progressoFvs(fvs({ items: [] }))).toBe(0);
+    expect(progressoFvs(fvs({ total: 3, respondidos: 1 }))).toBe(33);
+    expect(progressoFvs(fvs({ total: 0 }))).toBe(0);
   });
 
   it("atividades recentes vêm da mais nova para a mais antiga", () => {
@@ -93,9 +93,10 @@ describe("filtros de cada módulo", () => {
     expect(filtrarVistorias(lista, { q: "202" }).map((d) => d.id)).toEqual(["2"]);
   });
 
-  it("FVS: NC, obra e modelo", () => {
-    const lista = [fvs({ id: "1", items: [{ text: "a", result: "NC", note: "" }] }), fvs({ id: "2", templateName: "Contrapiso", obra: "Vista Verde" })];
+  it("FVS: NC, status, obra e modelo", () => {
+    const lista = [fvs({ id: "1", nc: 2 }), fvs({ id: "2", modelo: "Contrapiso", obra: "Vista Verde", status: "rascunho" })];
     expect(filtrarFvs(lista, { nc: "com" }).map((f) => f.id)).toEqual(["1"]);
+    expect(filtrarFvs(lista, { status: "rascunho" }).map((f) => f.id)).toEqual(["2"]);
     expect(filtrarFvs(lista, { modelo: "Contrapiso" }).map((f) => f.id)).toEqual(["2"]);
     expect(filtrarFvs(lista, { obra: "Edifício Jardins" }).map((f) => f.id)).toEqual(["1"]);
   });
@@ -105,7 +106,7 @@ describe("relatórios", () => {
   const dados = registros(
     [os({ id: "o", createdAt: "2026-10-05T10:00:00", client: { name: "Cli", phone: "", email: "", document: "", address: "Rua A" } })],
     [vistoria({ id: "v", createdAt: "2026-11-10T10:00:00" })],
-    [fvs({ id: "f", createdAt: "2026-11-20T10:00:00" })],
+    [fvs({ id: "f", criadaEm: "2026-11-20T10:00:00" })],
   );
   it("filtra por módulo, obra e período, do mais novo para o mais antigo", () => {
     expect(filtrarRelatorios(dados, {}).map((r) => r.id)).toEqual(["f", "v", "o"]);
