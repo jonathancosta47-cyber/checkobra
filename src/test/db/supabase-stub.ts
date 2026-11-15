@@ -47,14 +47,24 @@ grant execute on function storage.foldername(text) to authenticated;
 const root = process.cwd();
 const migrationsDir = path.join(root, "supabase", "migrations");
 
-export async function createSupabaseDb({ seed = true } = {}) {
+const migrations = () => readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort();
+
+// Aplica as migrations em ordem. Com "ate", para antes da primeira migration cujo nome
+// começa em "ate" (para testar migrações de dados); depois use aplicarMigrations(db, { desde }).
+export async function createSupabaseDb({ seed = true, ate }: { seed?: boolean; ate?: string } = {}) {
   const db = new PGlite();
   await db.exec(SUPABASE_STUB);
-  for (const file of readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
-    await db.exec(readFileSync(path.join(migrationsDir, file), "utf8"));
-  }
+  await aplicarMigrations(db, { ate });
   if (seed) await db.exec(readFileSync(path.join(root, "supabase", "seed.sql"), "utf8"));
   return db;
+}
+
+export async function aplicarMigrations(db: PGlite, { desde, ate }: { desde?: string | undefined; ate?: string | undefined } = {}) {
+  for (const file of migrations()) {
+    if (desde && file < desde) continue;
+    if (ate && file >= ate) break;
+    await db.exec(readFileSync(path.join(migrationsDir, file), "utf8"));
+  }
 }
 
 // Executa fn como um usuário logado (ou visitante, com userId null), igual ao PostgREST:

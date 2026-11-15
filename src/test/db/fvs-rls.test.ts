@@ -35,9 +35,14 @@ beforeAll(async () => {
       ('${INSPETOR_A}', '${EMPRESA_A}', 'Igor (inspetor A)', 'inspetor'),
       ('${ADMIN_B}', '${EMPRESA_B}', 'Bruno (admin B)', 'admin_empresa');
   `);
+  // inspetor só enxerga empreendimentos liberados para ele
+  await db.query(
+    "insert into empreendimento_membros (empresa_id, empreendimento_id, perfil_id) select empresa_id, id, $1 from empreendimentos where empresa_id = $2",
+    [INSPETOR_A, EMPRESA_A],
+  );
   const q = async (sql: string, empresa: string) => (await one<{ id: string }>(db, sql, [empresa])).id;
-  ids.obraA = await q("select id from obras where empresa_id = $1", EMPRESA_A);
-  ids.obraB = await q("select id from obras where empresa_id = $1", EMPRESA_B);
+  ids.obraA = await q("select id from empreendimentos where empresa_id = $1", EMPRESA_A);
+  ids.obraB = await q("select id from empreendimentos where empresa_id = $1", EMPRESA_B);
   ids.torreA = await q("select id from locais where empresa_id = $1 and tipo = 'torre' order by ordem", EMPRESA_A);
   ids.unidadeA = await q("select id from locais where empresa_id = $1 and tipo = 'unidade' order by nome", EMPRESA_A);
   ids.modeloA = await q("select id from modelos_fvs where empresa_id = $1 order by nome", EMPRESA_A);
@@ -71,8 +76,8 @@ describe("estrutura", () => {
         (select count(*)::int from modelo_itens i where i.empresa_id = e.id) as itens
       from empresas e order by e.nome`);
     expect(rows).toEqual([
-      { nome: "Construtora Horizonte (exemplo)", locais: 2 + 6 + 24, modelos: 2, itens: 10 },
-      { nome: "Pedra Forte Engenharia (exemplo)", locais: 1 + 4 + 8, modelos: 2, itens: 10 },
+      { nome: "Construtora Horizonte (exemplo)", locais: 2 + 6 + 24 + 2, modelos: 2, itens: 10 },
+      { nome: "Pedra Forte Engenharia (exemplo)", locais: 1 + 4 + 8 + 1, modelos: 2, itens: 10 },
     ]);
   });
 });
@@ -80,14 +85,14 @@ describe("estrutura", () => {
 describe("isolamento: a empresa A não vê dados da empresa B", () => {
   it("cada admin enxerga só a própria empresa em todas as tabelas", async () => {
     for (const [user, empresa, locais] of [
-      [ADMIN_A, EMPRESA_A, 32],
-      [ADMIN_B, EMPRESA_B, 13],
+      [ADMIN_A, EMPRESA_A, 34],
+      [ADMIN_B, EMPRESA_B, 14],
     ] as const) {
       await asUser(db, user, async (tx) => {
         expect((await tx.query<{ id: string }>("select id from empresas")).rows).toEqual([{ id: empresa }]);
         expect(await count(tx, "select 1 from locais")).toBe(locais);
         expect(await count(tx, "select 1 from modelos_fvs")).toBe(2);
-        for (const t of ["perfis", "obras", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fotos", "convites"]) {
+        for (const t of ["perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fotos", "convites", "empreendimento_membros", "ordens_servico", "delivery_inspections"]) {
           expect(await count(tx, `select 1 from ${t} where empresa_id <> $1`, [empresa]), t).toBe(0);
         }
       });
@@ -96,7 +101,7 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
 
   it("A não encontra registros de B nem pelo id", async () => {
     await asUser(db, ADMIN_A, async (tx) => {
-      expect(await count(tx, "select 1 from obras where id = $1", [ids.obraB])).toBe(0);
+      expect(await count(tx, "select 1 from empreendimentos where id = $1", [ids.obraB])).toBe(0);
       expect(await count(tx, "select 1 from modelos_fvs where id = $1", [ids.modeloB])).toBe(0);
       expect(await count(tx, "select 1 from perfis where id = $1", [ADMIN_B])).toBe(0);
       expect(await count(tx, "select 1 from empresas where id = $1", [EMPRESA_B])).toBe(0);
@@ -105,25 +110,25 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
 
   it("A não cria dados dentro da empresa B", async () => {
     const code = await pgErrorCode(
-      asUser(db, ADMIN_A, (tx) => tx.query("insert into obras (empresa_id, nome) values ($1, 'Invasão')", [EMPRESA_B])),
+      asUser(db, ADMIN_A, (tx) => tx.query("insert into empreendimentos (empresa_id, nome) values ($1, 'Invasão')", [EMPRESA_B])),
     );
     expect(code).toBe("42501");
   });
 
   it("A não altera nem apaga dados de B (0 linhas afetadas)", async () => {
     await asUser(db, ADMIN_A, async (tx) => {
-      expect((await tx.query("update obras set nome = 'Hackeada' where id = $1", [ids.obraB])).affectedRows).toBe(0);
+      expect((await tx.query("update empreendimentos set nome = 'Hackeada' where id = $1", [ids.obraB])).affectedRows).toBe(0);
       expect((await tx.query("delete from modelos_fvs where id = $1", [ids.modeloB])).affectedRows).toBe(0);
       expect((await tx.query("update empresas set nome = 'Hackeada' where id = $1", [EMPRESA_B])).affectedRows).toBe(0);
     });
-    const obra = await one<{ nome: string }>(db, "select nome from obras where id = $1", [ids.obraB]);
+    const obra = await one<{ nome: string }>(db, "select nome from empreendimentos where id = $1", [ids.obraB]);
     expect(obra.nome).toBe("Edifício Jardins");
     expect(await one<{ n: number }>(db, "select count(*)::int n from modelos_fvs where id = $1", [ids.modeloB])).toEqual({ n: 1 });
   });
 
   it("A não move os próprios dados para a empresa B", async () => {
     const code = await pgErrorCode(
-      asUser(db, ADMIN_A, (tx) => tx.query("update obras set empresa_id = $1 where id = $2", [EMPRESA_B, ids.obraA])),
+      asUser(db, ADMIN_A, (tx) => tx.query("update empreendimentos set empresa_id = $1 where id = $2", [EMPRESA_B, ids.obraA])),
     );
     expect(code).toBe("42501");
   });
@@ -132,14 +137,14 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
     // local da empresa A dentro da obra de B
     expect(
       await pgErrorCode(
-        asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (obra_id, tipo, nome) values ($1, 'torre', 'X')", [ids.obraB])),
+        asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (empreendimento_id, tipo, nome) values ($1, 'torre', 'X')", [ids.obraB])),
       ),
     ).toBe("23503");
     // inspeção da empresa A usando o modelo de B
     expect(
       await pgErrorCode(
         asUser(db, ADMIN_A, (tx) =>
-          tx.query("insert into inspecoes (obra_id, local_id, modelo_id) values ($1, $2, $3)", [ids.obraA, ids.unidadeA, ids.modeloB]),
+          tx.query("insert into inspecoes (empreendimento_id, local_id, modelo_id) values ($1, $2, $3)", [ids.obraA, ids.unidadeA, ids.modeloB]),
         ),
       ),
     ).toBe("23503");
@@ -149,7 +154,7 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
     const insp = await asUser(db, INSPETOR_A, (tx) =>
       one<{ id: string; numero: number }>(
         tx,
-        "insert into inspecoes (obra_id, local_id, modelo_id) values ($1, $2, $3) returning id, numero",
+        "insert into inspecoes (empreendimento_id, local_id, modelo_id) values ($1, $2, $3) returning id, numero",
         [ids.obraA, ids.unidadeA, ids.modeloA],
       ),
     );
@@ -196,19 +201,19 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
 
   it("usuário sem empresa não vê nada; visitante sem login não tem acesso", async () => {
     await asUser(db, SEM_EMPRESA, async (tx) => {
-      for (const t of ["empresas", "perfis", "obras", "locais", "modelos_fvs", "inspecoes"]) {
+      for (const t of ["empresas", "perfis", "empreendimentos", "locais", "modelos_fvs", "inspecoes", "ordens_servico", "delivery_inspections"]) {
         expect(await count(tx, `select 1 from ${t}`), t).toBe(0);
       }
     });
-    expect(await pgErrorCode(asUser(db, null, (tx) => tx.query("select * from obras")))).toBe("42501");
+    expect(await pgErrorCode(asUser(db, null, (tx) => tx.query("select * from empreendimentos")))).toBe("42501");
   });
 });
 
 describe("papéis", () => {
   it("inspetor não cadastra obra, local nem modelo", async () => {
     for (const sql of [
-      "insert into obras (nome) values ('Nova')",
-      `insert into locais (obra_id, tipo, nome) values ('${ids.obraA}', 'torre', 'Torre Z')`,
+      "insert into empreendimentos (nome) values ('Novo')",
+      `insert into locais (empreendimento_id, tipo, nome) values ('${ids.obraA}', 'torre', 'Torre Z')`,
       "insert into modelos_fvs (nome) values ('Novo modelo')",
     ]) {
       expect(await pgErrorCode(asUser(db, INSPETOR_A, (tx) => tx.query(sql))), sql).toBe("42501");
@@ -217,7 +222,7 @@ describe("papéis", () => {
 
   it("engenheiro/admin cadastra; o banco preenche a empresa sozinho", async () => {
     const obra = await asUser(db, ADMIN_A, (tx) =>
-      one<{ empresa_id: string }>(tx, "insert into obras (nome) values ('Obra nova') returning empresa_id"),
+      one<{ empresa_id: string }>(tx, "insert into empreendimentos (nome) values ('Empreendimento novo') returning empresa_id"),
     );
     expect(obra.empresa_id).toBe(EMPRESA_A);
   });
@@ -238,7 +243,7 @@ describe("papéis", () => {
     const insp = await asUser(db, INSPETOR_A, async (tx) => {
       const i = await one<{ id: string }>(
         tx,
-        "insert into inspecoes (obra_id, local_id, modelo_id) values ($1, $2, $3) returning id",
+        "insert into inspecoes (empreendimento_id, local_id, modelo_id) values ($1, $2, $3) returning id",
         [ids.obraA, ids.unidadeA, ids.modeloA],
       );
       await tx.query("insert into respostas (inspecao_id, item_id, texto, resultado) values ($1, $2, 'Prumo', 'NC')", [i.id, ids.itemA]);
@@ -258,7 +263,7 @@ describe("papéis", () => {
     const nc = await asUser(db, INSPETOR_A, async (tx) => {
       const i = await one<{ id: string }>(
         tx,
-        "insert into inspecoes (obra_id, local_id, modelo_id) values ($1, $2, $3) returning id",
+        "insert into inspecoes (empreendimento_id, local_id, modelo_id) values ($1, $2, $3) returning id",
         [ids.obraA, ids.unidadeA, ids.modeloA],
       );
       return one<{ id: string }>(tx, "insert into nao_conformidades (inspecao_id, descricao) values ($1, 'Junta fora do padrão') returning id", [i.id]);
@@ -282,7 +287,7 @@ describe("regras de integridade e entrada na empresa", () => {
     expect(
       await pgErrorCode(
         asUser(db, ADMIN_A, (tx) =>
-          tx.query("insert into locais (obra_id, pai_id, tipo, nome) values ($1, $2, 'unidade', 'Apto solto')", [ids.obraA, ids.torreA]),
+          tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'unidade', 'Apto solto')", [ids.obraA, ids.torreA]),
         ),
       ),
     ).toBe("23514");
@@ -292,7 +297,7 @@ describe("regras de integridade e entrada na empresa", () => {
     const nova = await asUser(db, SEM_EMPRESA, async (tx) => {
       const { criar_empresa } = await one<{ criar_empresa: string }>(tx, "select public.criar_empresa('Minha Construtora', 'Nova Pessoa')");
       expect(await one(tx, "select public.meu_papel() as papel")).toEqual({ papel: "admin_empresa" });
-      expect(await count(tx, "select 1 from obras")).toBe(0);
+      expect(await count(tx, "select 1 from empreendimentos")).toBe(0);
       return criar_empresa;
     });
     expect(nova).not.toBe(EMPRESA_A);

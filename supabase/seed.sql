@@ -1,4 +1,4 @@
--- Dados de exemplo (fictícios) para testar o FVS multi-empresa.
+-- Dados de exemplo (fictícios) para testar o CheckObra multi-empresa.
 -- Aplicar: npx supabase db push --remote --include-seed
 -- Remover antes de publicar (apaga tudo dessas empresas em cascata):
 --   delete from public.empresas where id in ('a0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002');
@@ -10,12 +10,14 @@ on conflict (id) do nothing;
 
 do $$
 declare
-  -- empresa, obra, endereço, nº de torres, pavimentos por torre, unidades por pavimento
-  obras_exemplo constant jsonb := '[
+  -- empresa, empreendimento, endereço, nº de torres, pavimentos por torre, unidades por pavimento, áreas comuns
+  exemplos constant jsonb := '[
     {"empresa": "a0000000-0000-4000-8000-000000000001", "nome": "Residencial Vista Verde",
-     "endereco": "Rua das Palmeiras, 100 — São Paulo/SP", "torres": 2, "pavimentos": 3, "unidades": 4},
+     "endereco": "Rua das Palmeiras, 100 — São Paulo/SP", "torres": 2, "pavimentos": 3, "unidades": 4,
+     "areas": ["Salão de festas", "Piscina"]},
     {"empresa": "b0000000-0000-4000-8000-000000000002", "nome": "Edifício Jardins",
-     "endereco": "Av. Central, 2500 — Belo Horizonte/MG", "torres": 1, "pavimentos": 4, "unidades": 2}
+     "endereco": "Av. Central, 2500 — Belo Horizonte/MG", "torres": 1, "pavimentos": 4, "unidades": 2,
+     "areas": ["Portaria"]}
   ]';
   modelos_exemplo constant jsonb := '[
     {"nome": "Alvenaria de vedação", "itens": [
@@ -31,43 +33,50 @@ declare
       ["Ausência de fissuras", "Sem fissuras visíveis"],
       ["Cura adequada", "Mín. 7 dias úmido"]]}
   ]';
-  o jsonb; m jsonb; it jsonb;
-  emp uuid; obra uuid; torre uuid; pav uuid; modelo uuid;
-  t int; p int; u int; k int;
+  o jsonb; m jsonb; it jsonb; a text;
+  emp_id uuid; empreendimento uuid; torre uuid; pav uuid; modelo uuid;
+  t int; p int; k int;
 begin
-  if exists (select 1 from public.obras where empresa_id in
+  if exists (select 1 from public.empreendimentos where empresa_id in
              ('a0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002')) then
     raise notice 'Dados de exemplo já existem; nada a fazer.';
     return;
   end if;
 
-  for o in select * from jsonb_array_elements(obras_exemplo) loop
-    emp := (o->>'empresa')::uuid;
-    insert into public.obras (empresa_id, nome, endereco)
-    values (emp, o->>'nome', o->>'endereco') returning id into obra;
+  for o in select * from jsonb_array_elements(exemplos) loop
+    emp_id := (o->>'empresa')::uuid;
+    insert into public.empreendimentos (empresa_id, nome, endereco)
+    values (emp_id, o->>'nome', o->>'endereco') returning id into empreendimento;
 
+    -- torres A, B...; pavimentos; unidades numeradas pavimento × 100 + unidade (101, 102...)
     for t in 1..(o->>'torres')::int loop
-      insert into public.locais (empresa_id, obra_id, tipo, nome, ordem)
-      values (emp, obra, 'torre', 'Torre ' || chr(64 + t), t) returning id into torre;
+      insert into public.locais (empresa_id, empreendimento_id, tipo, nome, ordem)
+      values (emp_id, empreendimento, 'torre', 'Torre ' || chr(64 + t), t) returning id into torre;
       for p in 1..(o->>'pavimentos')::int loop
-        insert into public.locais (empresa_id, obra_id, pai_id, tipo, nome, ordem)
-        values (emp, obra, torre, 'pavimento', p || 'º pavimento', p) returning id into pav;
-        for u in 1..(o->>'unidades')::int loop
-          insert into public.locais (empresa_id, obra_id, pai_id, tipo, nome, ordem)
-          values (emp, obra, pav, 'unidade', 'Apto ' || p || lpad(u::text, 2, '0'), u);
-        end loop;
+        insert into public.locais (empresa_id, empreendimento_id, pai_id, tipo, nome, ordem)
+        values (emp_id, empreendimento, torre, 'pavimento', p || 'º pavimento', p) returning id into pav;
+        insert into public.locais (empresa_id, empreendimento_id, pai_id, tipo, nome, ordem)
+        select emp_id, empreendimento, pav, 'unidade', (p * 100 + u)::text, u
+        from generate_series(1, (o->>'unidades')::int) u;
       end loop;
+    end loop;
+
+    k := 0;
+    for a in select * from jsonb_array_elements_text(o->'areas') loop
+      k := k + 1;
+      insert into public.locais (empresa_id, empreendimento_id, tipo, nome, ordem)
+      values (emp_id, empreendimento, 'area_comum', a, 1000 + k);
     end loop;
 
     -- cada empresa recebe sua própria cópia dos 2 modelos de FVS
     for m in select * from jsonb_array_elements(modelos_exemplo) loop
       insert into public.modelos_fvs (empresa_id, nome, descricao)
-      values (emp, m->>'nome', 'Modelo de exemplo') returning id into modelo;
+      values (emp_id, m->>'nome', 'Modelo de exemplo') returning id into modelo;
       k := 0;
       for it in select * from jsonb_array_elements(m->'itens') loop
         k := k + 1;
         insert into public.modelo_itens (empresa_id, modelo_id, ordem, texto, criterio)
-        values (emp, modelo, k, it->>0, it->>1);
+        values (emp_id, modelo, k, it->>0, it->>1);
       end loop;
     end loop;
   end loop;
@@ -79,3 +88,5 @@ end $$;
 --   insert into public.perfis (id, empresa_id, nome, papel)
 --   select id, 'a0000000-0000-4000-8000-000000000001', 'Seu nome', 'admin_empresa'
 --   from auth.users where email = 'seu-email@exemplo.com';
+--
+-- Inspetor só vê empreendimentos liberados para ele (o admin libera em empreendimento_membros).
