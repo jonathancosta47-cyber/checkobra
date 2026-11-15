@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "start": "node .output/server/index.mjs",
     "db:push": "npx supabase db push --remote",
-    "db:types": "supabase gen types typescript --linked > src/integrations/supabase/types.ts"
+    "db:types": "npx supabase gen types typescript --remote > src/integrations/supabase/types.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"

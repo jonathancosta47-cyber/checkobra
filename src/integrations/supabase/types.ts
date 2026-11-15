@@ -12,8 +12,71 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      convites: {
+        Row: {
+          aceito_em: string | null
+          created_at: string
+          criado_por: string | null
+          email: string
+          empresa_id: string
+          id: string
+          papel: Database["public"]["Enums"]["papel_usuario"]
+        }
+        Insert: {
+          aceito_em?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email: string
+          empresa_id?: string
+          id?: string
+          papel?: Database["public"]["Enums"]["papel_usuario"]
+        }
+        Update: {
+          aceito_em?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email?: string
+          empresa_id?: string
+          id?: string
+          papel?: Database["public"]["Enums"]["papel_usuario"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_inspections: {
         Row: {
           created_at: string
@@ -38,15 +101,573 @@ export type Database = {
         }
         Relationships: []
       }
+      empresas: {
+        Row: {
+          cnpj: string | null
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fotos: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          enviada_por: string | null
+          id: string
+          inspecao_id: string
+          legenda: string
+          nao_conformidade_id: string | null
+          resposta_id: string | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string
+          enviada_por?: string | null
+          id?: string
+          inspecao_id: string
+          legenda?: string
+          nao_conformidade_id?: string | null
+          resposta_id?: string | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          enviada_por?: string | null
+          id?: string
+          inspecao_id?: string
+          legenda?: string
+          nao_conformidade_id?: string | null
+          resposta_id?: string | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fotos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fotos_empresa_id_inspecao_id_fkey"
+            columns: ["empresa_id", "inspecao_id"]
+            isOneToOne: false
+            referencedRelation: "inspecoes"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "fotos_empresa_id_nao_conformidade_id_fkey"
+            columns: ["empresa_id", "nao_conformidade_id"]
+            isOneToOne: false
+            referencedRelation: "nao_conformidades"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "fotos_empresa_id_resposta_id_fkey"
+            columns: ["empresa_id", "resposta_id"]
+            isOneToOne: false
+            referencedRelation: "respostas"
+            referencedColumns: ["empresa_id", "id"]
+          },
+        ]
+      }
+      inspecoes: {
+        Row: {
+          assinado_por: string | null
+          assinatura_path: string | null
+          concluida_em: string | null
+          created_at: string
+          empresa_id: string
+          id: string
+          iniciada_em: string
+          inspetor_id: string
+          local_id: string
+          modelo_id: string
+          numero: number
+          obra_id: string
+          observacoes: string
+          status: Database["public"]["Enums"]["status_inspecao"]
+          updated_at: string
+        }
+        Insert: {
+          assinado_por?: string | null
+          assinatura_path?: string | null
+          concluida_em?: string | null
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          iniciada_em?: string
+          inspetor_id?: string
+          local_id: string
+          modelo_id: string
+          numero: number
+          obra_id: string
+          observacoes?: string
+          status?: Database["public"]["Enums"]["status_inspecao"]
+          updated_at?: string
+        }
+        Update: {
+          assinado_por?: string | null
+          assinatura_path?: string | null
+          concluida_em?: string | null
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          iniciada_em?: string
+          inspetor_id?: string
+          local_id?: string
+          modelo_id?: string
+          numero?: number
+          obra_id?: string
+          observacoes?: string
+          status?: Database["public"]["Enums"]["status_inspecao"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspecoes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspecoes_empresa_id_inspetor_id_fkey"
+            columns: ["empresa_id", "inspetor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "inspecoes_empresa_id_modelo_id_fkey"
+            columns: ["empresa_id", "modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos_fvs"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "inspecoes_empresa_id_obra_id_fkey"
+            columns: ["empresa_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "inspecoes_empresa_id_obra_id_local_id_fkey"
+            columns: ["empresa_id", "obra_id", "local_id"]
+            isOneToOne: false
+            referencedRelation: "locais"
+            referencedColumns: ["empresa_id", "obra_id", "id"]
+          },
+        ]
+      }
+      locais: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          id: string
+          nome: string
+          obra_id: string
+          ordem: number
+          pai_id: string | null
+          tipo: Database["public"]["Enums"]["tipo_local"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          nome: string
+          obra_id: string
+          ordem?: number
+          pai_id?: string | null
+          tipo: Database["public"]["Enums"]["tipo_local"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          nome?: string
+          obra_id?: string
+          ordem?: number
+          pai_id?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_local"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locais_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "locais_empresa_id_obra_id_fkey"
+            columns: ["empresa_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "locais_empresa_id_obra_id_pai_id_fkey"
+            columns: ["empresa_id", "obra_id", "pai_id"]
+            isOneToOne: false
+            referencedRelation: "locais"
+            referencedColumns: ["empresa_id", "obra_id", "id"]
+          },
+        ]
+      }
+      modelo_itens: {
+        Row: {
+          created_at: string
+          criterio: string
+          empresa_id: string
+          id: string
+          modelo_id: string
+          ordem: number
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criterio?: string
+          empresa_id?: string
+          id?: string
+          modelo_id: string
+          ordem?: number
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criterio?: string
+          empresa_id?: string
+          id?: string
+          modelo_id?: string
+          ordem?: number
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelo_itens_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modelo_itens_empresa_id_modelo_id_fkey"
+            columns: ["empresa_id", "modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos_fvs"
+            referencedColumns: ["empresa_id", "id"]
+          },
+        ]
+      }
+      modelos_fvs: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string
+          empresa_id: string
+          id: string
+          nome: string
+          updated_at: string
+          versao: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string
+          empresa_id?: string
+          id?: string
+          nome: string
+          updated_at?: string
+          versao?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string
+          empresa_id?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelos_fvs_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nao_conformidades: {
+        Row: {
+          aberta_por: string | null
+          created_at: string
+          descricao: string
+          empresa_id: string
+          id: string
+          inspecao_id: string
+          prazo: string | null
+          resolvida_em: string | null
+          responsavel: string
+          resposta_id: string | null
+          status: Database["public"]["Enums"]["status_nc"]
+          updated_at: string
+          verificada_em: string | null
+          verificada_por: string | null
+        }
+        Insert: {
+          aberta_por?: string | null
+          created_at?: string
+          descricao: string
+          empresa_id?: string
+          id?: string
+          inspecao_id: string
+          prazo?: string | null
+          resolvida_em?: string | null
+          responsavel?: string
+          resposta_id?: string | null
+          status?: Database["public"]["Enums"]["status_nc"]
+          updated_at?: string
+          verificada_em?: string | null
+          verificada_por?: string | null
+        }
+        Update: {
+          aberta_por?: string | null
+          created_at?: string
+          descricao?: string
+          empresa_id?: string
+          id?: string
+          inspecao_id?: string
+          prazo?: string | null
+          resolvida_em?: string | null
+          responsavel?: string
+          resposta_id?: string | null
+          status?: Database["public"]["Enums"]["status_nc"]
+          updated_at?: string
+          verificada_em?: string | null
+          verificada_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nao_conformidades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nao_conformidades_empresa_id_inspecao_id_fkey"
+            columns: ["empresa_id", "inspecao_id"]
+            isOneToOne: false
+            referencedRelation: "inspecoes"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "nao_conformidades_empresa_id_resposta_id_fkey"
+            columns: ["empresa_id", "resposta_id"]
+            isOneToOne: false
+            referencedRelation: "respostas"
+            referencedColumns: ["empresa_id", "id"]
+          },
+        ]
+      }
+      obras: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          endereco: string
+          id: string
+          nome: string
+          status: Database["public"]["Enums"]["status_obra"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string
+          endereco?: string
+          id?: string
+          nome: string
+          status?: Database["public"]["Enums"]["status_obra"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          endereco?: string
+          id?: string
+          nome?: string
+          status?: Database["public"]["Enums"]["status_obra"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perfis: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          empresa_id: string
+          id: string
+          nome: string
+          papel: Database["public"]["Enums"]["papel_usuario"]
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id: string
+          id: string
+          nome?: string
+          papel?: Database["public"]["Enums"]["papel_usuario"]
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          nome?: string
+          papel?: Database["public"]["Enums"]["papel_usuario"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfis_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      respostas: {
+        Row: {
+          created_at: string
+          criterio: string
+          empresa_id: string
+          id: string
+          inspecao_id: string
+          item_id: string | null
+          observacao: string
+          ordem: number
+          resultado: Database["public"]["Enums"]["resultado_item"] | null
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criterio?: string
+          empresa_id?: string
+          id?: string
+          inspecao_id: string
+          item_id?: string | null
+          observacao?: string
+          ordem?: number
+          resultado?: Database["public"]["Enums"]["resultado_item"] | null
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criterio?: string
+          empresa_id?: string
+          id?: string
+          inspecao_id?: string
+          item_id?: string | null
+          observacao?: string
+          ordem?: number
+          resultado?: Database["public"]["Enums"]["resultado_item"] | null
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respostas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respostas_empresa_id_inspecao_id_fkey"
+            columns: ["empresa_id", "inspecao_id"]
+            isOneToOne: false
+            referencedRelation: "inspecoes"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "respostas_empresa_id_item_id_fkey"
+            columns: ["empresa_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "modelo_itens"
+            referencedColumns: ["empresa_id", "id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      aceitar_convite: { Args: { p_nome_usuario?: string }; Returns: string }
+      criar_empresa: {
+        Args: { p_nome: string; p_nome_usuario?: string }
+        Returns: string
+      }
+      meu_papel: {
+        Args: never
+        Returns: Database["public"]["Enums"]["papel_usuario"]
+      }
+      minha_empresa_id: { Args: never; Returns: string }
+      pode_editar_inspecao: { Args: { p_inspecao: string }; Returns: boolean }
+      tem_papel: {
+        Args: { papeis: Database["public"]["Enums"]["papel_usuario"][] }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      papel_usuario: "admin_empresa" | "engenheiro" | "inspetor"
+      resultado_item: "C" | "NC" | "NA"
+      status_inspecao: "rascunho" | "concluida" | "cancelada"
+      status_nc: "aberta" | "em_correcao" | "resolvida" | "verificada"
+      status_obra: "ativa" | "pausada" | "concluida"
+      tipo_local: "torre" | "pavimento" | "unidade"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -172,7 +793,17 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  public: {
+  graphql_public: {
     Enums: {},
+  },
+  public: {
+    Enums: {
+      papel_usuario: ["admin_empresa", "engenheiro", "inspetor"],
+      resultado_item: ["C", "NC", "NA"],
+      status_inspecao: ["rascunho", "concluida", "cancelada"],
+      status_nc: ["aberta", "em_correcao", "resolvida", "verificada"],
+      status_obra: ["ativa", "pausada", "concluida"],
+      tipo_local: ["torre", "pavimento", "unidade"],
+    },
   },
 } as const
