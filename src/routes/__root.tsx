@@ -74,12 +74,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "CheckObra — Ordens de Serviço e FVS" },
       { name: "description", content: "Gerador de ordens de serviço de manutenção." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#2F4A3A" },
+      { name: "theme-color", content: "#E8A040" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

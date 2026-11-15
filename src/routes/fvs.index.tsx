@@ -51,7 +51,7 @@ function FvsList() {
           })}
         </ul>
       )}
-      <Link to="/fvs/nova" className="btn-primary fixed bottom-6 left-1/2 -translate-x-1/2 shadow-lg">+ Nova FVS</Link>
+      <Link to="/fvs/nova" className="btn-primary fixed bottom-[calc(var(--obra-nav-altura)+env(safe-area-inset-bottom)+1rem)] left-1/2 -translate-x-1/2 shadow-lg">+ Nova FVS</Link>
     </main>
   );
 }

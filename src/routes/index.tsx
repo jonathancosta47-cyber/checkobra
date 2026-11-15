@@ -59,7 +59,7 @@ function Index() {
           ))}
         </ul>
       )}
-      <Link to="/nova" className="btn-primary fixed bottom-6 left-1/2 -translate-x-1/2 shadow-lg">+ Nova OS</Link>
+      <Link to="/nova" className="btn-primary fixed bottom-[calc(var(--obra-nav-altura)+env(safe-area-inset-bottom)+1rem)] left-1/2 -translate-x-1/2 shadow-lg">+ Nova OS</Link>
     </main>
   );
 }

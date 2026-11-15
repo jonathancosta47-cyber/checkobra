@@ -73,185 +73,194 @@ function LoginPage() {
   const isSignup = mode === "signup";
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-8 pt-12">
-      <div className="mb-8 flex items-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <HardHat className="h-6 w-6" aria-hidden />
-        </span>
-        <div>
-          <p className="eyebrow">CheckObra</p>
-          <p className="text-sm text-muted-foreground">Vistorias de campo</p>
+    <main className="min-h-dvh bg-obra-fundo text-obra-grafite">
+      {/* Cabeçalho laranja curvo com a marca */}
+      <header className="obra-cabecalho px-4 pb-20 text-center">
+        <div className="pt-10">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-obra-grafite shadow-obra">
+            <HardHat className="h-8 w-8 text-obra-laranja" aria-hidden />
+          </span>
+          <p className="mt-3 text-3xl font-extrabold tracking-tight">CheckObra</p>
+          <p className="text-sm font-semibold opacity-80">Vistorias de qualidade em obra</p>
         </div>
-      </div>
+      </header>
 
-      {session ? (
-        <section className="panel space-y-4" aria-live="polite">
-          <h1 className="font-display text-2xl font-bold">Olá, {session.name.split(" ")[0]}!</h1>
-          <p className="text-sm text-muted-foreground">Você entrou como {session.email}.</p>
-          <button type="button" className="btn-primary h-12 w-full" onClick={goOn}>
-            Continuar
-          </button>
-          <button
-            type="button"
-            className="btn-ghost h-12 w-full justify-center gap-2"
-            onClick={async () => {
-              await signOut();
-              setSession(null);
-              setPassword("");
-            }}
-          >
-            <LogOut className="h-4 w-4" aria-hidden /> Sair
-          </button>
-        </section>
-      ) : sentTo ? (
-        <section className="panel space-y-4" aria-live="polite">
-          <MailCheck className="h-10 w-10 text-primary" aria-hidden />
-          <h1 className="font-display text-2xl font-bold">Confira seu e-mail</h1>
-          <p className="text-sm">
-            Se <strong>{sentTo}</strong> ainda não tiver conta, enviamos um link de confirmação para ele.
-            Abra o link e depois entre com sua senha.
-          </p>
-          <p className="text-sm text-muted-foreground">Não chegou? Veja a caixa de spam.</p>
-          <button
-            type="button"
-            className="btn-primary h-12 w-full"
-            onClick={() => {
-              setSentTo("");
-              setPassword("");
-              switchMode("signin");
-            }}
-          >
-            Voltar para entrar
-          </button>
-        </section>
-      ) : (
-        <>
-          <div role="tablist" aria-label="Acesso" className="mb-6 grid grid-cols-2 rounded-full bg-secondary p-1">
-            {(["signin", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="tab"
-                aria-selected={mode === m}
-                className={`h-11 rounded-full text-sm font-bold transition ${mode === m ? "bg-primary text-primary-foreground" : "text-secondary-foreground"}`}
-                onClick={() => switchMode(m)}
-              >
-                {m === "signin" ? "Entrar" : "Criar conta"}
-              </button>
-            ))}
-          </div>
-
-          <h1 className="mb-1 font-display text-3xl font-bold">{isSignup ? "Criar conta" : "Entrar"}</h1>
-          <p className="mb-6 text-muted-foreground">
-            {isSignup ? "Preencha seus dados para começar." : "Use seu e-mail e senha."}
-          </p>
-          <form
-            noValidate
-            className="space-y-4"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setBusy(true);
-              setError(null);
-              setNotice("");
-              if (isSignup) {
-                const r = await signUp(name, email, password);
-                setBusy(false);
-                if ("error" in r) setError(r.error);
-                else if ("confirmEmail" in r) setSentTo(email.trim());
-                else goOn();
-              } else {
-                const r = await signIn(email, password);
-                setBusy(false);
-                if ("error" in r) setError(r.error);
-                else goOn();
-              }
-            }}
-          >
-            {isSignup && (
-              <label className="block">
-                <span className="text-sm font-semibold">Nome</span>
-                <input
-                  className="field mt-1 h-12"
-                  type="text"
-                  autoComplete="name"
-                  autoCapitalize="words"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  aria-invalid={!!error && nameErrors.includes(error)}
-                />
-              </label>
-            )}
-            <label className="block">
-              <span className="text-sm font-semibold">E-mail</span>
-              <input
-                className="field mt-1 h-12"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                aria-invalid={!!error && emailErrors.includes(error)}
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-semibold">Senha</span>
-              <div className="relative mt-1">
-                <input
-                  className="field h-12 pr-12"
-                  type={show ? "text" : "password"}
-                  autoComplete={isSignup ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  aria-invalid={!!error && passwordErrors.includes(error)}
-                  aria-describedby={isSignup ? "password-hint" : undefined}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-muted-foreground"
-                  onClick={() => setShow(!show)}
-                  aria-label={show ? "Ocultar senha" : "Mostrar senha"}
-                >
-                  {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {isSignup && (
-                <span id="password-hint" className="mt-1 block text-xs text-muted-foreground">
-                  Mínimo de {MIN_PASSWORD} caracteres.
-                </span>
-              )}
-            </label>
-            {error && (
-              <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm font-semibold text-destructive">
-                {signInErrorMessage[error]}
-              </p>
-            )}
-            <button type="submit" className="btn-primary h-12 w-full" disabled={busy}>
-              {busy ? "Aguarde…" : isSignup ? "Criar conta" : "Entrar"}
+      <div className="mx-auto -mt-12 w-full max-w-md px-4 pb-10">
+        {session ? (
+          <section className="obra-card space-y-4 p-5" aria-live="polite">
+            <h1 className="text-2xl font-extrabold">Olá, {session.name.split(" ")[0]}!</h1>
+            <p className="text-sm text-obra-suave">Você entrou como {session.email}.</p>
+            <button type="button" className="obra-btn w-full" onClick={goOn}>
+              Continuar
             </button>
-          </form>
-
-          {!isSignup && (
             <button
               type="button"
-              className="mt-4 self-center p-3 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+              className="obra-btn-claro w-full"
               onClick={async () => {
-                setError(null);
-                const ok = await requestPasswordReset(email);
-                if (ok) setNotice("Se o e-mail estiver cadastrado, você vai receber um link para criar uma nova senha.");
-                else setError("invalid_email");
+                await signOut();
+                setSession(null);
+                setPassword("");
               }}
             >
-              Esqueci minha senha
+              <LogOut className="h-4 w-4" aria-hidden /> Sair
             </button>
-          )}
-          {notice && (
-            <p role="status" className="rounded-md bg-secondary p-3 text-sm text-secondary-foreground">
-              {notice}
+          </section>
+        ) : sentTo ? (
+          <section className="obra-card space-y-4 p-5" aria-live="polite">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-obra-bege">
+              <MailCheck className="h-7 w-7" aria-hidden />
+            </span>
+            <h1 className="text-2xl font-extrabold">Confira seu e-mail</h1>
+            <p className="text-sm">
+              Se <strong>{sentTo}</strong> ainda não tiver conta, enviamos um link de confirmação para ele.
+              Abra o link e depois entre com sua senha.
             </p>
-          )}
-        </>
-      )}
+            <p className="text-sm text-obra-suave">Não chegou? Veja a caixa de spam.</p>
+            <button
+              type="button"
+              className="obra-btn w-full"
+              onClick={() => {
+                setSentTo("");
+                setPassword("");
+                switchMode("signin");
+              }}
+            >
+              Voltar para entrar
+            </button>
+          </section>
+        ) : (
+          <section className="obra-card p-5">
+            <div role="tablist" aria-label="Acesso" className="obra-pilulas mb-5 grid-cols-2">
+              {(["signin", "signup"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  className="obra-pilula"
+                  onClick={() => switchMode(m)}
+                >
+                  {m === "signin" ? "Entrar" : "Criar conta"}
+                </button>
+              ))}
+            </div>
+
+            <h1 className="text-2xl font-extrabold">{isSignup ? "Criar conta" : "Bem-vindo de volta"}</h1>
+            <p className="mb-5 text-sm text-obra-suave">
+              {isSignup ? "Preencha seus dados para começar." : "Use seu e-mail e senha."}
+            </p>
+            <form
+              noValidate
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setBusy(true);
+                setError(null);
+                setNotice("");
+                if (isSignup) {
+                  const r = await signUp(name, email, password);
+                  setBusy(false);
+                  if ("error" in r) setError(r.error);
+                  else if ("confirmEmail" in r) setSentTo(email.trim());
+                  else goOn();
+                } else {
+                  const r = await signIn(email, password);
+                  setBusy(false);
+                  if ("error" in r) setError(r.error);
+                  else goOn();
+                }
+              }}
+            >
+              {isSignup && (
+                <label className="block">
+                  <span className="obra-label">Nome</span>
+                  <input
+                    className="obra-input"
+                    type="text"
+                    autoComplete="name"
+                    autoCapitalize="words"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    aria-invalid={!!error && nameErrors.includes(error)}
+                  />
+                </label>
+              )}
+              <label className="block">
+                <span className="obra-label">E-mail</span>
+                <input
+                  className="obra-input"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  placeholder="voce@empresa.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={!!error && emailErrors.includes(error)}
+                />
+              </label>
+              <label className="block">
+                <span className="obra-label">Senha</span>
+                <div className="relative">
+                  <input
+                    className="obra-input pr-14"
+                    type={show ? "text" : "password"}
+                    autoComplete={isSignup ? "new-password" : "current-password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    aria-invalid={!!error && passwordErrors.includes(error)}
+                    aria-describedby={isSignup ? "password-hint" : undefined}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex w-14 items-center justify-center rounded-r-2xl text-obra-suave"
+                    onClick={() => setShow(!show)}
+                    aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {isSignup && (
+                  <span id="password-hint" className="mt-1.5 block text-xs text-obra-suave">
+                    Mínimo de {MIN_PASSWORD} caracteres.
+                  </span>
+                )}
+              </label>
+              {error && (
+                <p role="alert" className="obra-alerta-erro">
+                  {signInErrorMessage[error]}
+                </p>
+              )}
+              <button type="submit" className="obra-btn w-full" disabled={busy}>
+                {busy ? "Aguarde…" : isSignup ? "Criar conta" : "Entrar"}
+              </button>
+            </form>
+
+            {!isSignup && (
+              <div className="mt-3 text-center">
+                <button
+                  type="button"
+                  className="obra-link"
+                  onClick={async () => {
+                    setError(null);
+                    const ok = await requestPasswordReset(email);
+                    if (ok) setNotice("Se o e-mail estiver cadastrado, você vai receber um link para criar uma nova senha.");
+                    else setError("invalid_email");
+                  }}
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+            )}
+            {notice && (
+              <p role="status" className="obra-aviso mt-3">
+                {notice}
+              </p>
+            )}
+          </section>
+        )}
+      </div>
     </main>
   );
 }
