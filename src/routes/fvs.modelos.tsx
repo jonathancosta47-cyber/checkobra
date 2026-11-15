@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { listarModelos } from "@/lib/fvs-store";
 import type { Modelo } from "@/lib/fvs-db";
 import { Etiqueta, Pagina } from "@/components/modulos";
-import { PerfilGate } from "@/components/PerfilGate";
 
 export const Route = createFileRoute("/fvs/modelos")({
   head: () => ({
@@ -18,9 +17,7 @@ export const Route = createFileRoute("/fvs/modelos")({
 function Page() {
   return (
     <Pagina className="pt-5">
-      <PerfilGate>
-        <Modelos />
-      </PerfilGate>
+      <Modelos />
     </Pagina>
   );
 }

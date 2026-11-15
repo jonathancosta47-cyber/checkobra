@@ -1,14 +1,12 @@
 // Regras da FVS no banco (multi-empresa). Só lógica, sem acesso ao Supabase.
 import type { Database } from "@/integrations/supabase/types";
+export { caminhoDoLocal, filhosDe, nomeDoCaminho, PROXIMO_TIPO, TIPO_ROTULO, type Local, type TipoLocal } from "./empreendimentos";
 
 type Tabelas = Database["public"]["Tables"];
 export type Papel = Database["public"]["Enums"]["papel_usuario"];
 export type Resultado = Database["public"]["Enums"]["resultado_item"];
 export type StatusInspecao = Database["public"]["Enums"]["status_inspecao"];
-export type TipoLocal = Database["public"]["Enums"]["tipo_local"];
 
-export type Obra = Pick<Tabelas["obras"]["Row"], "id" | "nome" | "endereco" | "status">;
-export type Local = Pick<Tabelas["locais"]["Row"], "id" | "obra_id" | "pai_id" | "tipo" | "nome" | "ordem">;
 export type ModeloItem = Pick<Tabelas["modelo_itens"]["Row"], "id" | "ordem" | "texto" | "criterio">;
 export type Modelo = Pick<Tabelas["modelos_fvs"]["Row"], "id" | "nome" | "descricao" | "versao" | "ativo"> & { itens: ModeloItem[] };
 export type Resposta = Pick<Tabelas["respostas"]["Row"], "id" | "item_id" | "ordem" | "texto" | "criterio" | "resultado" | "observacao">;
@@ -28,8 +26,8 @@ export interface InspecaoResumo {
   criadaEm: string;
   concluidaEm: string | null;
   inspetorId: string;
-  obraId: string;
-  obra: string;
+  empreendimentoId: string;
+  obra: string; // nome do empreendimento
   localId: string;
   local: string; // caminho: "Torre A › 1º pavimento › Apto 101"
   modelo: string;
@@ -49,29 +47,8 @@ export const PAPEL_ROTULO: Record<Papel, string> = {
   inspetor: "Inspetor",
 };
 export const RESULTADO_ROTULO: Record<Resultado, string> = { C: "Conforme", NC: "Não conforme", NA: "Não se aplica" };
-export const TIPO_ROTULO: Record<TipoLocal, string> = { torre: "Torre", pavimento: "Pavimento", unidade: "Unidade" };
-export const PROXIMO_TIPO: Record<TipoLocal, TipoLocal | null> = { torre: "pavimento", pavimento: "unidade", unidade: null };
 
 export const gerencia = (p: Papel) => p === "admin_empresa" || p === "engenheiro";
-
-// ───────────── locais (torre > pavimento > unidade) ─────────────
-
-const porOrdem = (a: Local, b: Local) => a.ordem - b.ordem || a.nome.localeCompare(b.nome, "pt-BR", { numeric: true });
-
-export const filhosDe = (locais: Local[], paiId: string | null) =>
-  locais.filter((l) => l.pai_id === paiId).sort(porOrdem);
-
-export function caminhoDoLocal(locais: Local[], localId: string): Local[] {
-  const porId = new Map(locais.map((l) => [l.id, l]));
-  const caminho: Local[] = [];
-  let atual = porId.get(localId);
-  while (atual && caminho.length < 3) {
-    caminho.unshift(atual);
-    atual = atual.pai_id ? porId.get(atual.pai_id) : undefined;
-  }
-  return caminho;
-}
-export const nomeDoCaminho = (caminho: Pick<Local, "nome">[]) => caminho.map((l) => l.nome).join(" › ");
 
 // ───────────── respostas ─────────────
 

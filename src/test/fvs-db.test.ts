@@ -11,7 +11,7 @@ import {
   type Resposta,
 } from "@/lib/fvs-db";
 
-const loc = (id: string, tipo: Local["tipo"], nome: string, pai_id: string | null, ordem = 0): Local => ({ id, obra_id: "o", pai_id, tipo, nome, ordem });
+const loc = (id: string, tipo: Local["tipo"], nome: string, pai_id: string | null, ordem = 0): Local => ({ id, empreendimento_id: "o", pai_id, tipo, nome, ordem });
 const locais = [
   loc("tB", "torre", "Torre B", null, 2),
   loc("tA", "torre", "Torre A", null, 1),

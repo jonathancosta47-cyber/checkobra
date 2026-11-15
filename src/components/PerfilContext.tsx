@@ -5,38 +5,32 @@ import type { Perfil } from "@/lib/fvs-db";
 
 const PerfilCtx = createContext<Perfil | null>(null);
 
-// Perfil da pessoa logada (empresa e papel). Só use dentro de <PerfilGate>.
+// Perfil da pessoa logada (empresa e papel). Disponível em todas as telas logadas que têm empresa.
 export function usePerfil(): Perfil {
   const p = useContext(PerfilCtx);
-  if (!p) throw new Error("usePerfil fora do PerfilGate");
+  if (!p) throw new Error("usePerfil fora do PerfilValor");
   return p;
 }
 
-// Garante que a conta pertence a uma empresa antes de mostrar as telas do FVS.
-export function PerfilGate({ children }: { children: ReactNode }) {
+export const PerfilValor = ({ perfil, children }: { perfil: Perfil; children: ReactNode }) => (
+  <PerfilCtx.Provider value={perfil}>{children}</PerfilCtx.Provider>
+);
+
+// Carrega o perfil uma vez para o app inteiro.
+export function usePerfilCarregado() {
   const [perfil, setPerfil] = useState<Perfil | null | undefined>(undefined);
-  const [erro, setErro] = useState("");
-  const carregar = useCallback(() => {
-    setErro("");
+  const [erro, setErro] = useState(false);
+  const recarregar = useCallback(() => {
+    setErro(false);
     meuPerfil()
       .then(setPerfil)
       .catch(() => {
-        setErro("Não foi possível carregar sua empresa. Verifique a internet.");
+        setErro(true);
         setPerfil(null);
       });
   }, []);
-  useEffect(carregar, [carregar]);
-
-  if (perfil === undefined) return <p role="status" className="py-10 text-center text-obra-suave">Carregando…</p>;
-  if (erro)
-    return (
-      <div className="obra-card space-y-3 p-5 text-center">
-        <p role="alert" className="obra-alerta-erro">{erro}</p>
-        <button type="button" className="obra-btn w-full" onClick={carregar}>Tentar de novo</button>
-      </div>
-    );
-  if (!perfil) return <SemEmpresa onPronto={carregar} />;
-  return <PerfilCtx.Provider value={perfil}>{children}</PerfilCtx.Provider>;
+  useEffect(recarregar, [recarregar]);
+  return { perfil, carregando: perfil === undefined, erro, recarregar };
 }
 
 const MENSAGENS: [trecho: string, texto: string][] = [
@@ -47,7 +41,8 @@ const MENSAGENS: [trecho: string, texto: string][] = [
 ];
 const traduzir = (msg: string) => MENSAGENS.find(([t]) => msg.includes(t))?.[1] ?? "Não foi possível concluir. Tente de novo.";
 
-function SemEmpresa({ onPronto }: { onPronto: () => void }) {
+// Primeira tela de quem ainda não tem empresa: criar a empresa (vira admin) ou aceitar convite.
+export function SemEmpresa({ onPronto }: { onPronto: () => void }) {
   const [modo, setModo] = useState<"criar" | "convite">("criar");
   const [empresa, setEmpresa] = useState("");
   const [nome, setNome] = useState("");
@@ -57,9 +52,9 @@ function SemEmpresa({ onPronto }: { onPronto: () => void }) {
   return (
     <section className="obra-card space-y-4 p-5">
       <div>
-        <h2 className="text-xl font-extrabold text-obra-grafite">Sua conta ainda não tem empresa</h2>
+        <h2 className="text-xl font-extrabold text-obra-grafite">Vamos começar pela sua empresa</h2>
         <p className="mt-1 text-sm text-obra-suave">
-          As FVS ficam guardadas na empresa: cada empresa só vê os próprios dados.
+          Empreendimentos, OS, vistorias e FVS ficam guardados na empresa: cada empresa só vê os próprios dados.
         </p>
       </div>
       <div role="tablist" aria-label="Como entrar" className="obra-pilulas grid-cols-2">

@@ -6,7 +6,7 @@ import { SignaturePad } from "@/components/SignaturePad";
 import { DeliveryPhotos } from "./DeliveryPhotos";
 import { DeliveryEvaluation } from "./DeliveryEvaluation";
 import { unitLabels } from "./DeliveryReport";
-import { saveDelivery } from "@/lib/delivery-store";
+import { saveDelivery, type VinculoVistoria } from "@/lib/delivery-store";
 import {
   documentLabels,
   evaluationLabels,
@@ -21,7 +21,7 @@ import {
   type DeliveryItem,
   type Evaluation,
 } from "@/lib/delivery";
-export function DeliveryForm({ initial }: { initial: Delivery }) {
+export function DeliveryForm({ initial, vinculo }: { initial: Delivery; vinculo: VinculoVistoria }) {
   const [d, setD] = useState(initial),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -52,7 +52,7 @@ export function DeliveryForm({ initial }: { initial: Delivery }) {
         setBusy(true);
         setError("");
         try {
-          await saveDelivery(d);
+          await saveDelivery(d, vinculo);
           await nav({ to: "/vistorias/$id", params: { id: d.id } });
         } catch {
           setError("Não foi possível salvar a vistoria. Confira sua conexão e tente novamente.");

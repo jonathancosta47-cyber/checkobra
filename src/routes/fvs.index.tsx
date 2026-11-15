@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Building, ListChecks } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { listarInspecoes } from "@/lib/fvs-store";
-import { numeroFvs, PAPEL_ROTULO, type InspecaoResumo } from "@/lib/fvs-db";
-import { filtrarFvs, modelosDasFvs, obrasDasFvs, progressoFvs, type FiltroPendencia, type FiltroStatusFvs } from "@/lib/modules";
+import { numeroFvs, type InspecaoResumo } from "@/lib/fvs-db";
+import type { Empreendimento } from "@/lib/empreendimentos";
+import { filtrarFvs, modelosDasFvs, progressoFvs, type FiltroPendencia, type FiltroStatusFvs } from "@/lib/modules";
 import { BuscaCard, CardItem, Etiqueta, Pagina, Pilulas, SeletorFiltro, Vazio } from "@/components/modulos";
-import { PerfilGate, usePerfil } from "@/components/PerfilGate";
+import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
 
 export const Route = createFileRoute("/fvs/")({
   head: () => ({
@@ -20,9 +21,7 @@ export const Route = createFileRoute("/fvs/")({
 function Page() {
   return (
     <Pagina>
-      <PerfilGate>
-        <ListaFvs />
-      </PerfilGate>
+      <ComEmpreendimento>{(emp) => <ListaFvs key={emp.id} emp={emp} />}</ComEmpreendimento>
     </Pagina>
   );
 }
@@ -38,35 +37,28 @@ const FILTRO_STATUS: { v: FiltroStatusFvs; l: string }[] = [
   { v: "concluida", l: "Concluídas" },
 ];
 
-function ListaFvs() {
-  const perfil = usePerfil();
+function ListaFvs({ emp }: { emp: Empreendimento }) {
   const [list, setList] = useState<InspecaoResumo[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [q, setQ] = useState("");
   const [nc, setNc] = useState<FiltroPendencia>("todas");
   const [status, setStatus] = useState<FiltroStatusFvs>("todas");
-  const [obra, setObra] = useState("");
   const [modelo, setModelo] = useState("");
 
   useEffect(() => {
-    listarInspecoes()
+    listarInspecoes(emp.id)
       .then(setList)
       .catch(() => setErro("Não foi possível carregar as FVS."))
       .finally(() => setCarregando(false));
-  }, []);
-  const lista = filtrarFvs(list, { q, nc, status, obra, modelo });
+  }, [emp.id]);
+  const lista = filtrarFvs(list, { q, nc, status, modelo });
 
   return (
     <>
       <BuscaCard label="Buscar FVS" placeholder="Nº, modelo, obra ou local" value={q} onChange={setQ} />
 
-      <div className="mt-4 flex items-center gap-2">
-        <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold text-obra-grafite">
-          <Building className="h-4 w-4 shrink-0 text-obra-suave" aria-hidden />
-          <span className="truncate">{perfil.empresaNome}</span>
-          <span className="shrink-0 rounded-full bg-obra-bege px-2 py-0.5 text-xs">{PAPEL_ROTULO[perfil.papel]}</span>
-        </p>
+      <div className="mt-4 flex justify-end">
         <Link to="/fvs/modelos" className="btn-ghost shrink-0">
           <ListChecks className="h-4 w-4" aria-hidden /> Modelos
         </Link>
@@ -75,10 +67,7 @@ function ListaFvs() {
       <div className="mt-4 space-y-3">
         <Pilulas label="Filtrar por não conformidade" opcoes={FILTRO_NC} valor={nc} onChange={setNc} />
         <Pilulas label="Filtrar por status" opcoes={FILTRO_STATUS} valor={status} onChange={setStatus} />
-        <div className="flex gap-2">
-          <SeletorFiltro label="Filtrar por obra" todos="Todas as obras" valor={obra} onChange={setObra} opcoes={obrasDasFvs(list)} />
-          <SeletorFiltro label="Filtrar por modelo" todos="Todos os modelos" valor={modelo} onChange={setModelo} opcoes={modelosDasFvs(list)} />
-        </div>
+        <SeletorFiltro label="Filtrar por modelo" todos="Todos os modelos" valor={modelo} onChange={setModelo} opcoes={modelosDasFvs(list)} />
       </div>
 
       {erro && <p role="alert" className="obra-alerta-erro mt-4">{erro}</p>}
@@ -104,7 +93,7 @@ function ListaFvs() {
                   id={i.id}
                   numero={`${numeroFvs(i.numero)} · ${new Date(i.criadaEm).toLocaleDateString("pt-BR")}`}
                   titulo={i.modelo || "Sem modelo"}
-                  detalhe={[i.obra, i.local].filter(Boolean).join(" · ") || "—"}
+                  detalhe={i.local || "—"}
                   etiqueta={
                     i.nc ? (
                       <Etiqueta tom="nc">{i.nc} NC</Etiqueta>

@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FileDown } from "lucide-react";
-import { loadOrders, type ServiceOrder } from "@/lib/orders";
+import type { ServiceOrder } from "@/lib/orders";
+import { listarOS } from "@/lib/os-store";
+import type { Empreendimento } from "@/lib/empreendimentos";
+import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
 import { listarInspecoes } from "@/lib/fvs-store";
 import type { InspecaoResumo } from "@/lib/fvs-db";
 import { listDeliveries } from "@/lib/delivery-store";
@@ -30,36 +33,43 @@ const MODULOS_FILTRO: { v: FiltroModulo; l: string }[] = [
 ];
 
 function Relatorios() {
+  return (
+    <Pagina className="pt-5">
+      <ComEmpreendimento>{(emp) => <ListaRelatorios key={emp.id} emp={emp} />}</ComEmpreendimento>
+    </Pagina>
+  );
+}
+
+function ListaRelatorios({ emp }: { emp: Empreendimento }) {
   const [os, setOs] = useState<ServiceOrder[]>([]);
   const [fvs, setFvs] = useState<InspecaoResumo[]>([]);
   const [vistorias, setVistorias] = useState<Delivery[]>([]);
   const [erroVistorias, setErroVistorias] = useState(false);
+  const [erroOS, setErroOS] = useState(false);
   const [modulo, setModulo] = useState<FiltroModulo>("todos");
-  const [obra, setObra] = useState("");
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
 
   useEffect(() => {
-    setOs(loadOrders());
-    listarInspecoes()
+    listarOS(emp.id)
+      .then(setOs)
+      .catch(() => setErroOS(true));
+    listarInspecoes(emp.id)
       .then(setFvs)
       .catch(() => setFvs([]));
-    listDeliveries()
+    listDeliveries(emp.id)
       .then(setVistorias)
       .catch(() => setErroVistorias(true));
-  }, []);
+  }, [emp.id]);
 
-  const linhas = filtrarRelatorios(registros(os, vistorias, fvs), { modulo, obra, de, ate });
-  const temFiltro = modulo !== "todos" || obra || de || ate;
+  const linhas = filtrarRelatorios(registros(os, vistorias, fvs), { modulo, de, ate });
+  const temFiltro = modulo !== "todos" || de || ate;
 
   return (
-    <Pagina className="pt-5">
+    <>
       <section className="obra-card space-y-4 p-4" aria-label="Filtros">
         <Pilulas label="Filtrar por módulo" opcoes={MODULOS_FILTRO} valor={modulo} onChange={setModulo} />
-        <label className="block">
-          <span className="obra-label">Obra, empreendimento ou cliente</span>
-          <input className="obra-input" type="search" placeholder="Ex.: Residencial Vista Verde" value={obra} onChange={(e) => setObra(e.target.value)} />
-        </label>
+        <p className="text-sm text-obra-suave">Empreendimento: <strong className="text-obra-grafite">{emp.nome}</strong> (troque no topo da tela)</p>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="obra-label">De</span>
@@ -76,7 +86,6 @@ function Relatorios() {
             className="obra-link"
             onClick={() => {
               setModulo("todos");
-              setObra("");
               setDe("");
               setAte("");
             }}
@@ -86,6 +95,11 @@ function Relatorios() {
         )}
       </section>
 
+      {erroOS && (modulo === "todos" || modulo === "os") && (
+        <p role="alert" className="obra-alerta-erro mt-4">
+          Não foi possível carregar as OS.
+        </p>
+      )}
       {erroVistorias && (modulo === "todos" || modulo === "vistorias") && (
         <p role="alert" className="obra-alerta-erro mt-4">
           Não foi possível carregar as vistorias de entrega.
@@ -124,6 +138,6 @@ function Relatorios() {
           })}
         </ul>
       )}
-    </Pagina>
+    </>
   );
 }

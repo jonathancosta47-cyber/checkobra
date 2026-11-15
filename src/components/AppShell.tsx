@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Building2, ClipboardCheck, FileBarChart, Home, LogOut, Plus, Settings, Wrench, X, type LucideIcon } from "lucide-react";
+import { Building2, ChevronDown, ClipboardCheck, FileBarChart, Home, LogOut, Plus, Settings, Wrench, X, type LucideIcon } from "lucide-react";
 import { signOut, type FieldSession } from "@/lib/field-auth";
 import { destinoDoMais, moduloDaRota, MODULOS } from "@/lib/modules";
 import { ICONE_MODULO } from "@/components/modulos";
+import { PerfilValor, SemEmpresa, usePerfil, usePerfilCarregado } from "@/components/PerfilContext";
+import { gerencia } from "@/lib/fvs-db";
+import { EmpreendimentoProvider, EscolherEmpreendimento, useEmpreendimentos } from "@/components/EmpreendimentoContext";
 
 // Títulos do cabeçalho por rota (só apresentação).
 const TITULOS: [prefixo: string, titulo: string][] = [
@@ -20,56 +23,129 @@ const TITULOS: [prefixo: string, titulo: string][] = [
   ["/fvs", "FVS"],
   ["/relatorios", "Relatórios"],
   ["/configuracoes", "Configurações"],
+  ["/empreendimentos/novo", "Novo empreendimento"],
 ];
+// Rotas /empreendimentos/<id>/estrutura e /empreendimentos/<id>
+const TITULO_EMPREENDIMENTO = (p: string) => (p.endsWith("/estrutura") ? "Estrutura" : "Empreendimento");
 export function tituloDaRota(pathname: string) {
   const p = pathname.replace(/\/+$/, "") || "/";
   const hit = TITULOS.find(([pre]) => (pre.endsWith("/") ? p.startsWith(pre) : p === pre || p.startsWith(pre + "/")));
-  return hit?.[1] ?? "CheckObra";
+  if (hit) return hit[1];
+  if (p.startsWith("/empreendimentos/")) return TITULO_EMPREENDIMENTO(p);
+  return p === "/" ? "Empreendimentos" : "CheckObra";
 }
 
 // Moldura das páginas logadas: cabeçalho laranja + barra de navegação inferior.
-// Nada disso aparece na impressão/PDF (no-print).
+// Carrega a empresa (perfil) uma vez para o app inteiro: sem empresa, todas as abas
+// mostram "Criar empresa / Tenho convite". Nada disso aparece na impressão/PDF (no-print).
 export function AppShell({ session, children }: { session: FieldSession; children: ReactNode }) {
   const { pathname } = useLocation();
+  const { perfil, carregando, erro, recarregar } = usePerfilCarregado();
+  const titulo = tituloDaRota(pathname);
+
+  if (perfil)
+    return (
+      <PerfilValor perfil={perfil}>
+        <EmpreendimentoProvider>
+          <Moldura pathname={pathname} cabecalho={<AppHeader title={titulo} subtitulo={perfil.empresaNome} seletor={<SeletorEmpreendimento />} />}>
+            {children}
+          </Moldura>
+        </EmpreendimentoProvider>
+      </PerfilValor>
+    );
+  return (
+    <Moldura pathname={pathname} semNav cabecalho={<AppHeader title="CheckObra" subtitulo={session.email} />}>
+      <main className="mx-auto w-full max-w-3xl px-4 pb-6">
+        <div className="relative z-10 -mt-7">
+          {carregando ? (
+            <p role="status" className="obra-card p-5 text-center text-obra-suave">Carregando…</p>
+          ) : erro ? (
+            <div className="obra-card space-y-3 p-5 text-center">
+              <p role="alert" className="obra-alerta-erro">Não foi possível carregar sua empresa. Verifique a internet.</p>
+              <button type="button" className="obra-btn w-full" onClick={recarregar}>Tentar de novo</button>
+            </div>
+          ) : (
+            <SemEmpresa onPronto={recarregar} />
+          )}
+        </div>
+      </main>
+    </Moldura>
+  );
+}
+
+function Moldura({ pathname, cabecalho, children, semNav }: { pathname: string; cabecalho: ReactNode; children: ReactNode; semNav?: boolean }) {
   return (
     <div className="min-h-dvh bg-obra-fundo">
-      <AppHeader title={tituloDaRota(pathname)} email={session.email} />
+      {cabecalho}
       <div className="obra-com-nav">{children}</div>
-      <BottomNav pathname={pathname} />
+      {!semNav && <BottomNav pathname={pathname} />}
     </div>
   );
 }
 
-function AppHeader({ title, email }: { title: string; email: string }) {
+function AppHeader({ title, subtitulo, seletor }: { title: string; subtitulo: string; seletor?: ReactNode }) {
   const [busy, setBusy] = useState(false);
   return (
     <header className="obra-cabecalho no-print relative z-0">
-      <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 pb-10 pt-3">
-        <Link to="/configuracoes" className="obra-icone-btn" aria-label="Configurações da empresa" title="Configurações">
-          <Settings className="h-5 w-5" aria-hidden />
-        </Link>
-        <div className="min-w-0 flex-1 text-center">
-          <h1 className="truncate text-lg font-extrabold leading-tight">{title}</h1>
-          <p className="truncate text-xs font-semibold opacity-80" title={email}>
-            {email}
-          </p>
+      <div className="mx-auto max-w-3xl px-3 pb-10 pt-3">
+        <div className="flex items-center gap-2">
+          <Link to="/configuracoes" className="obra-icone-btn" aria-label="Configurações da empresa" title="Configurações">
+            <Settings className="h-5 w-5" aria-hidden />
+          </Link>
+          <div className="min-w-0 flex-1 text-center">
+            <h1 className="truncate text-lg font-extrabold leading-tight">{title}</h1>
+            <p className="truncate text-xs font-semibold opacity-80" title={subtitulo}>
+              {subtitulo}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="obra-icone-btn"
+            aria-label={busy ? "Saindo…" : "Sair"}
+            title="Sair"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              // ao sair, o AuthGate percebe e leva para /login
+              await signOut().finally(() => setBusy(false));
+            }}
+          >
+            <LogOut className="h-5 w-5" aria-hidden />
+          </button>
         </div>
-        <button
-          type="button"
-          className="obra-icone-btn"
-          aria-label={busy ? "Saindo…" : "Sair"}
-          title="Sair"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            // ao sair, o AuthGate percebe e leva para /login
-            await signOut().finally(() => setBusy(false));
-          }}
-        >
-          <LogOut className="h-5 w-5" aria-hidden />
-        </button>
+        {seletor && <div className="mt-2 flex justify-center">{seletor}</div>}
       </div>
     </header>
+  );
+}
+
+// Botão no cabeçalho com o empreendimento atual; abre a lista para trocar.
+function SeletorEmpreendimento() {
+  const { atual } = useEmpreendimentos();
+  const [aberto, setAberto] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setAberto(false), [pathname]);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAberto(true)}
+        aria-haspopup="dialog"
+        className="inline-flex min-h-10 max-w-full items-center gap-1.5 rounded-full bg-obra-card/45 px-4 text-sm font-extrabold transition hover:bg-obra-card/70"
+      >
+        <Building2 className="h-4 w-4 shrink-0" aria-hidden />
+        <span className="truncate">{atual ? atual.nome : "Escolher empreendimento"}</span>
+        <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
+      </button>
+      {aberto && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Trocar empreendimento">
+          <button type="button" className="absolute inset-0 bg-obra-grafite/40" aria-label="Fechar" onClick={() => setAberto(false)} />
+          <div className="absolute inset-x-0 top-4 mx-auto max-w-lg px-3 text-left text-obra-grafite">
+            <EscolherEmpreendimento titulo="Trocar empreendimento" onEscolhido={() => setAberto(false)} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -152,10 +228,16 @@ function MenuNovo({ onClose }: { onClose: () => void }) {
     window.addEventListener("keydown", esc);
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
-  const opcoes = [
-    { m: "os" as const, to: "/os/nova" as const, desc: "Manutenção com cliente, fotos e assinaturas" },
-    { m: "vistorias" as const, to: "/vistorias/nova" as const, desc: "Entrega de unidade: cômodos e pendências" },
-    { m: "fvs" as const, to: "/fvs/nova" as const, desc: "Ficha de verificação de serviço da obra" },
+  const perfil = usePerfil();
+  const { atual } = useEmpreendimentos();
+  const onde = atual ? ` em ${atual.nome}` : "";
+  const opcoes: { chave: string; to: "/os/nova" | "/vistorias/nova" | "/fvs/nova" | "/empreendimentos/novo"; rotulo: string; desc: string; Icone: LucideIcon }[] = [
+    ...(gerencia(perfil.papel)
+      ? [{ chave: "emp", to: "/empreendimentos/novo" as const, rotulo: "Novo empreendimento", desc: "Torres, pavimentos, unidades e áreas comuns", Icone: Building2 }]
+      : []),
+    { chave: "os", to: "/os/nova", rotulo: MODULOS.os.novoRotulo, desc: `Manutenção com cliente, fotos e assinaturas${onde}`, Icone: ICONE_MODULO.os },
+    { chave: "vistorias", to: "/vistorias/nova", rotulo: MODULOS.vistorias.novoRotulo, desc: `Entrega de unidade: cômodos e pendências${onde}`, Icone: ICONE_MODULO.vistorias },
+    { chave: "fvs", to: "/fvs/nova", rotulo: MODULOS.fvs.novoRotulo, desc: `Verificação de serviço${onde}`, Icone: ICONE_MODULO.fvs },
   ];
   return (
     <div className="no-print fixed inset-0 z-30" role="dialog" aria-modal="true" aria-label="O que você quer criar?">
@@ -166,9 +248,9 @@ function MenuNovo({ onClose }: { onClose: () => void }) {
       >
         <ul className="obra-card space-y-1 p-2">
           {opcoes.map((o, k) => {
-            const Icone = ICONE_MODULO[o.m];
+            const Icone = o.Icone;
             return (
-              <li key={o.m}>
+              <li key={o.chave}>
                 <Link
                   ref={k === 0 ? primeiro : undefined}
                   to={o.to}
@@ -179,7 +261,7 @@ function MenuNovo({ onClose }: { onClose: () => void }) {
                     <Icone className="h-5 w-5" aria-hidden />
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-extrabold text-obra-grafite">{MODULOS[o.m].novoRotulo}</span>
+                    <span className="block font-extrabold text-obra-grafite">{o.rotulo}</span>
                     <span className="block truncate text-xs text-obra-suave">{o.desc}</span>
                   </span>
                 </Link>

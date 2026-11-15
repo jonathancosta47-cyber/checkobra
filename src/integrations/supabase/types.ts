@@ -81,25 +81,143 @@ export type Database = {
         Row: {
           created_at: string
           data: Json
+          empreendimento_id: string
+          empresa_id: string
           id: string
+          local_id: string | null
           owner_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           data: Json
+          empreendimento_id: string
+          empresa_id?: string
           id?: string
+          local_id?: string | null
           owner_id?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           data?: Json
+          empreendimento_id?: string
+          empresa_id?: string
           id?: string
+          local_id?: string | null
           owner_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "delivery_inspections_empreendimento_fk"
+            columns: ["empresa_id", "empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "delivery_inspections_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_inspections_local_fk"
+            columns: ["empresa_id", "empreendimento_id", "local_id"]
+            isOneToOne: false
+            referencedRelation: "locais"
+            referencedColumns: ["empresa_id", "empreendimento_id", "id"]
+          },
+        ]
+      }
+      empreendimento_membros: {
+        Row: {
+          created_at: string
+          empreendimento_id: string
+          empresa_id: string
+          liberado_por: string | null
+          perfil_id: string
+        }
+        Insert: {
+          created_at?: string
+          empreendimento_id: string
+          empresa_id?: string
+          liberado_por?: string | null
+          perfil_id: string
+        }
+        Update: {
+          created_at?: string
+          empreendimento_id?: string
+          empresa_id?: string
+          liberado_por?: string | null
+          perfil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_membros_empresa_id_empreendimento_id_fkey"
+            columns: ["empresa_id", "empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "empreendimento_membros_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_membros_empresa_id_perfil_id_fkey"
+            columns: ["empresa_id", "perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["empresa_id", "id"]
+          },
+        ]
+      }
+      empreendimentos: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          endereco: string
+          foto_path: string | null
+          id: string
+          nome: string
+          status: Database["public"]["Enums"]["status_obra"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string
+          endereco?: string
+          foto_path?: string | null
+          id?: string
+          nome: string
+          status?: Database["public"]["Enums"]["status_obra"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          endereco?: string
+          foto_path?: string | null
+          id?: string
+          nome?: string
+          status?: Database["public"]["Enums"]["status_obra"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       empresas: {
         Row: {
@@ -196,6 +314,7 @@ export type Database = {
           assinatura_path: string | null
           concluida_em: string | null
           created_at: string
+          empreendimento_id: string
           empresa_id: string
           id: string
           iniciada_em: string
@@ -203,7 +322,6 @@ export type Database = {
           local_id: string
           modelo_id: string
           numero: number
-          obra_id: string
           observacoes: string
           status: Database["public"]["Enums"]["status_inspecao"]
           updated_at: string
@@ -213,6 +331,7 @@ export type Database = {
           assinatura_path?: string | null
           concluida_em?: string | null
           created_at?: string
+          empreendimento_id: string
           empresa_id?: string
           id?: string
           iniciada_em?: string
@@ -220,7 +339,6 @@ export type Database = {
           local_id: string
           modelo_id: string
           numero: number
-          obra_id: string
           observacoes?: string
           status?: Database["public"]["Enums"]["status_inspecao"]
           updated_at?: string
@@ -230,6 +348,7 @@ export type Database = {
           assinatura_path?: string | null
           concluida_em?: string | null
           created_at?: string
+          empreendimento_id?: string
           empresa_id?: string
           id?: string
           iniciada_em?: string
@@ -237,7 +356,6 @@ export type Database = {
           local_id?: string
           modelo_id?: string
           numero?: number
-          obra_id?: string
           observacoes?: string
           status?: Database["public"]["Enums"]["status_inspecao"]
           updated_at?: string
@@ -266,27 +384,27 @@ export type Database = {
           },
           {
             foreignKeyName: "inspecoes_empresa_id_obra_id_fkey"
-            columns: ["empresa_id", "obra_id"]
+            columns: ["empresa_id", "empreendimento_id"]
             isOneToOne: false
-            referencedRelation: "obras"
+            referencedRelation: "empreendimentos"
             referencedColumns: ["empresa_id", "id"]
           },
           {
             foreignKeyName: "inspecoes_empresa_id_obra_id_local_id_fkey"
-            columns: ["empresa_id", "obra_id", "local_id"]
+            columns: ["empresa_id", "empreendimento_id", "local_id"]
             isOneToOne: false
             referencedRelation: "locais"
-            referencedColumns: ["empresa_id", "obra_id", "id"]
+            referencedColumns: ["empresa_id", "empreendimento_id", "id"]
           },
         ]
       }
       locais: {
         Row: {
           created_at: string
+          empreendimento_id: string
           empresa_id: string
           id: string
           nome: string
-          obra_id: string
           ordem: number
           pai_id: string | null
           tipo: Database["public"]["Enums"]["tipo_local"]
@@ -294,10 +412,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          empreendimento_id: string
           empresa_id?: string
           id?: string
           nome: string
-          obra_id: string
           ordem?: number
           pai_id?: string | null
           tipo: Database["public"]["Enums"]["tipo_local"]
@@ -305,10 +423,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          empreendimento_id?: string
           empresa_id?: string
           id?: string
           nome?: string
-          obra_id?: string
           ordem?: number
           pai_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_local"]
@@ -324,17 +442,17 @@ export type Database = {
           },
           {
             foreignKeyName: "locais_empresa_id_obra_id_fkey"
-            columns: ["empresa_id", "obra_id"]
+            columns: ["empresa_id", "empreendimento_id"]
             isOneToOne: false
-            referencedRelation: "obras"
+            referencedRelation: "empreendimentos"
             referencedColumns: ["empresa_id", "id"]
           },
           {
             foreignKeyName: "locais_empresa_id_obra_id_pai_id_fkey"
-            columns: ["empresa_id", "obra_id", "pai_id"]
+            columns: ["empresa_id", "empreendimento_id", "pai_id"]
             isOneToOne: false
             referencedRelation: "locais"
-            referencedColumns: ["empresa_id", "obra_id", "id"]
+            referencedColumns: ["empresa_id", "empreendimento_id", "id"]
           },
         ]
       }
@@ -500,37 +618,60 @@ export type Database = {
           },
         ]
       }
-      obras: {
+      ordens_servico: {
         Row: {
           created_at: string
+          criado_por: string | null
+          dados: Json
+          empreendimento_id: string
           empresa_id: string
-          endereco: string
           id: string
-          nome: string
-          status: Database["public"]["Enums"]["status_obra"]
+          local_id: string | null
+          numero: number
+          status: Database["public"]["Enums"]["status_os"]
           updated_at: string
         }
         Insert: {
           created_at?: string
+          criado_por?: string | null
+          dados?: Json
+          empreendimento_id: string
           empresa_id?: string
-          endereco?: string
           id?: string
-          nome: string
-          status?: Database["public"]["Enums"]["status_obra"]
+          local_id?: string | null
+          numero: number
+          status?: Database["public"]["Enums"]["status_os"]
           updated_at?: string
         }
         Update: {
           created_at?: string
+          criado_por?: string | null
+          dados?: Json
+          empreendimento_id?: string
           empresa_id?: string
-          endereco?: string
           id?: string
-          nome?: string
-          status?: Database["public"]["Enums"]["status_obra"]
+          local_id?: string | null
+          numero?: number
+          status?: Database["public"]["Enums"]["status_os"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "obras_empresa_id_fkey"
+            foreignKeyName: "ordens_servico_empresa_id_empreendimento_id_fkey"
+            columns: ["empresa_id", "empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["empresa_id", "id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_empresa_id_empreendimento_id_local_id_fkey"
+            columns: ["empresa_id", "empreendimento_id", "local_id"]
+            isOneToOne: false
+            referencedRelation: "locais"
+            referencedColumns: ["empresa_id", "empreendimento_id", "id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
@@ -646,6 +787,17 @@ export type Database = {
     }
     Functions: {
       aceitar_convite: { Args: { p_nome_usuario?: string }; Returns: string }
+      criar_empreendimento: {
+        Args: {
+          p_areas_comuns?: string[]
+          p_endereco?: string
+          p_nome: string
+          p_pavimentos?: number
+          p_torres?: number
+          p_unidades?: number
+        }
+        Returns: string
+      }
       criar_empresa: {
         Args: { p_nome: string; p_nome_usuario?: string }
         Returns: string
@@ -656,6 +808,11 @@ export type Database = {
       }
       minha_empresa_id: { Args: never; Returns: string }
       pode_editar_inspecao: { Args: { p_inspecao: string }; Returns: boolean }
+      pode_ver_empreendimento: {
+        Args: { p_empreendimento: string }
+        Returns: boolean
+      }
+      pode_ver_inspecao: { Args: { p_inspecao: string }; Returns: boolean }
       tem_papel: {
         Args: { papeis: Database["public"]["Enums"]["papel_usuario"][] }
         Returns: boolean
@@ -667,7 +824,8 @@ export type Database = {
       status_inspecao: "rascunho" | "concluida" | "cancelada"
       status_nc: "aberta" | "em_correcao" | "resolvida" | "verificada"
       status_obra: "ativa" | "pausada" | "concluida"
-      tipo_local: "torre" | "pavimento" | "unidade"
+      status_os: "aberta" | "em_andamento" | "concluida"
+      tipo_local: "torre" | "pavimento" | "unidade" | "area_comum"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -803,7 +961,8 @@ export const Constants = {
       status_inspecao: ["rascunho", "concluida", "cancelada"],
       status_nc: ["aberta", "em_correcao", "resolvida", "verificada"],
       status_obra: ["ativa", "pausada", "concluida"],
-      tipo_local: ["torre", "pavimento", "unidade"],
+      status_os: ["aberta", "em_andamento", "concluida"],
+      tipo_local: ["torre", "pavimento", "unidade", "area_comum"],
     },
   },
 } as const

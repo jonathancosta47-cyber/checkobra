@@ -15,7 +15,7 @@ import {
   type Resultado,
 } from "@/lib/fvs-db";
 import { Etiqueta, Pagina, Progresso } from "@/components/modulos";
-import { PerfilGate, usePerfil } from "@/components/PerfilGate";
+import { usePerfil } from "@/components/PerfilContext";
 
 export const Route = createFileRoute("/fvs/$id")({
   head: () => ({
@@ -31,9 +31,7 @@ function Page() {
   const { id } = Route.useParams();
   return (
     <Pagina className="pt-5">
-      <PerfilGate>
-        <Ficha id={id} />
-      </PerfilGate>
+      <Ficha id={id} />
     </Pagina>
   );
 }

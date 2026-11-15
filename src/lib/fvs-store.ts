@@ -1,6 +1,7 @@
 // Acesso ao Supabase para a FVS multi-empresa. A empresa nunca é enviada:
 // o banco preenche empresa_id sozinho e o RLS garante que cada um só vê a sua.
 import { supabase } from "@/integrations/supabase/client";
+import { listarLocais } from "./empreendimentos-store";
 import {
   caminhoDoLocal,
   contarRespostas,
@@ -10,7 +11,6 @@ import {
   type InspecaoResumo,
   type Local,
   type Modelo,
-  type Obra,
   type Perfil,
   type Resposta,
   type Resultado,
@@ -47,22 +47,6 @@ export async function aceitarConvite(nomeUsuario: string) {
 
 // ───────────── cadastros ─────────────
 
-export async function listarObras(): Promise<Obra[]> {
-  const { data, error } = await supabase.from("obras").select("id, nome, endereco, status").order("nome");
-  falhou(error);
-  return data ?? [];
-}
-
-export async function listarLocais(obraIds: string[]): Promise<Local[]> {
-  if (!obraIds.length) return [];
-  const { data, error } = await supabase
-    .from("locais")
-    .select("id, obra_id, pai_id, tipo, nome, ordem")
-    .in("obra_id", obraIds);
-  falhou(error);
-  return data ?? [];
-}
-
 export async function listarModelos(): Promise<Modelo[]> {
   const { data, error } = await supabase
     .from("modelos_fvs")
@@ -75,12 +59,12 @@ export async function listarModelos(): Promise<Modelo[]> {
 // ───────────── inspeções ─────────────
 
 const SELECT_INSPECAO =
-  "id, numero, status, created_at, concluida_em, inspetor_id, obra_id, local_id, observacoes, obras(nome), modelos_fvs(nome), respostas(id, item_id, ordem, texto, criterio, resultado, observacao)";
+  "id, numero, status, created_at, concluida_em, inspetor_id, empreendimento_id, local_id, observacoes, empreendimentos(nome), modelos_fvs(nome), respostas(id, item_id, ordem, texto, criterio, resultado, observacao)";
 
 type LinhaInspecao = {
   id: string; numero: number; status: InspecaoResumo["status"]; created_at: string; concluida_em: string | null;
-  inspetor_id: string; obra_id: string; local_id: string; observacoes: string;
-  obras: { nome: string } | null; modelos_fvs: { nome: string } | null; respostas: Resposta[];
+  inspetor_id: string; empreendimento_id: string; local_id: string; observacoes: string;
+  empreendimentos: { nome: string } | null; modelos_fvs: { nome: string } | null; respostas: Resposta[];
 };
 
 function montar(l: LinhaInspecao, locais: Local[]): Inspecao {
@@ -92,8 +76,8 @@ function montar(l: LinhaInspecao, locais: Local[]): Inspecao {
     criadaEm: l.created_at,
     concluidaEm: l.concluida_em,
     inspetorId: l.inspetor_id,
-    obraId: l.obra_id,
-    obra: l.obras?.nome ?? "",
+    empreendimentoId: l.empreendimento_id,
+    obra: l.empreendimentos?.nome ?? "",
     localId: l.local_id,
     local: nomeDoCaminho(caminhoDoLocal(locais, l.local_id)),
     modelo: l.modelos_fvs?.nome ?? "",
@@ -103,11 +87,14 @@ function montar(l: LinhaInspecao, locais: Local[]): Inspecao {
   };
 }
 
-export async function listarInspecoes(): Promise<InspecaoResumo[]> {
-  const { data, error } = await supabase.from("inspecoes").select(SELECT_INSPECAO).order("created_at", { ascending: false });
+// Inspeções de um empreendimento (ou de todos os visíveis, sem filtro).
+export async function listarInspecoes(empreendimentoId?: string): Promise<InspecaoResumo[]> {
+  let q = supabase.from("inspecoes").select(SELECT_INSPECAO).order("created_at", { ascending: false });
+  if (empreendimentoId) q = q.eq("empreendimento_id", empreendimentoId);
+  const { data, error } = await q;
   falhou(error);
   const linhas = (data ?? []) as unknown as LinhaInspecao[];
-  const locais = await listarLocais([...new Set(linhas.map((l) => l.obra_id))]);
+  const locais = await listarLocais([...new Set(linhas.map((l) => l.empreendimento_id))]);
   return linhas.map((l) => {
     const { respostas: _r, observacoes: _o, ...resumo } = montar(l, locais);
     return resumo;
@@ -119,16 +106,16 @@ export async function lerInspecao(id: string): Promise<Inspecao | null> {
   falhou(error);
   if (!data) return null;
   const linha = data as unknown as LinhaInspecao;
-  return montar(linha, await listarLocais([linha.obra_id]));
+  return montar(linha, await listarLocais([linha.empreendimento_id]));
 }
 
 // Cria a inspeção (rascunho) e copia os itens do modelo para as respostas.
 // Se copiar os itens falhar, apaga a inspeção para não deixar uma ficha vazia.
-export async function criarInspecao(obraId: string, localId: string, modelo: Modelo): Promise<string> {
+export async function criarInspecao(empreendimentoId: string, localId: string, modelo: Modelo): Promise<string> {
   const { data, error } = await supabase
     .from("inspecoes")
     // numero: o banco calcula (FVS #1, #2... por empresa); o 0 é substituído
-    .insert({ obra_id: obraId, local_id: localId, modelo_id: modelo.id, numero: 0 })
+    .insert({ empreendimento_id: empreendimentoId, local_id: localId, modelo_id: modelo.id, numero: 0 })
     .select("id")
     .single();
   falhou(error);

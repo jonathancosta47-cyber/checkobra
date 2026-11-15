@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { DeliveryAccess } from "@/components/DeliveryAccess";
+import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
+import type { Empreendimento } from "@/lib/empreendimentos";
 import { listDeliveries } from "@/lib/delivery-store";
 import { pendingCount, type Delivery } from "@/lib/delivery";
-import { filtrarVistorias, obrasDasVistorias, progressoVistoria, type FiltroPendencia } from "@/lib/modules";
-import { BuscaCard, CardItem, Etiqueta, Pagina, Pilulas, SeletorFiltro, Vazio } from "@/components/modulos";
+import { filtrarVistorias, progressoVistoria, type FiltroPendencia } from "@/lib/modules";
+import { BuscaCard, CardItem, Etiqueta, Pagina, Pilulas, Vazio } from "@/components/modulos";
 
 export const Route = createFileRoute("/vistorias/")({
   head: () => ({
@@ -19,9 +20,7 @@ export const Route = createFileRoute("/vistorias/")({
 function Page() {
   return (
     <Pagina>
-      <DeliveryAccess>
-        <List />
-      </DeliveryAccess>
+      <ComEmpreendimento>{(emp) => <List key={emp.id} emp={emp} />}</ComEmpreendimento>
     </Pagina>
   );
 }
@@ -32,27 +31,25 @@ const FILTROS: { v: FiltroPendencia; l: string }[] = [
   { v: "sem", l: "Sem pendências" },
 ];
 
-function List() {
+function List({ emp }: { emp: Empreendimento }) {
   const [list, setList] = useState<Delivery[]>([]),
     [q, setQ] = useState(""),
     [pendencia, setPendencia] = useState<FiltroPendencia>("todas"),
-    [obra, setObra] = useState(""),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
   useEffect(() => {
-    listDeliveries()
+    listDeliveries(emp.id)
       .then(setList)
       .catch(() => setError("Não foi possível carregar as vistorias."))
       .finally(() => setLoading(false));
-  }, []);
-  const lista = filtrarVistorias(list, { q, pendencia, obra });
+  }, [emp.id]);
+  const lista = filtrarVistorias(list, { q, pendencia });
 
   return (
     <div>
-      <BuscaCard label="Buscar vistorias" placeholder="Empreendimento, torre, apartamento ou cliente" value={q} onChange={setQ} />
+      <BuscaCard label="Buscar vistorias" placeholder="Torre, apartamento ou cliente" value={q} onChange={setQ} />
       <div className="mt-4 space-y-3">
         <Pilulas label="Filtrar por pendências" opcoes={FILTROS} valor={pendencia} onChange={setPendencia} />
-        <SeletorFiltro label="Filtrar por obra" todos="Todas as obras" valor={obra} onChange={setObra} opcoes={obrasDasVistorias(list)} />
       </div>
       {error && (
         <p role="alert" className="obra-alerta-erro mt-4">

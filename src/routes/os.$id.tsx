@@ -4,7 +4,8 @@ import { CompanyHeader } from "@/components/CompanyHeader";
 import { ReportPhotos } from "@/components/ReportPhotos";
 import { exportElementToPdf } from "@/lib/pdf";
 import { OrderCheckIcon } from "@/components/OrderCheckIcon";
-import { checkLabel, deleteOrder, getOrder, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
+import { checkLabel, loadCompany, type Company, statusLabel, type ServiceOrder } from "@/lib/orders";
+import { apagarOS, lerOS } from "@/lib/os-store";
 
 export const Route = createFileRoute("/os/$id")({
   head: () => ({
@@ -34,7 +35,11 @@ function OrderView() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const [o, setO] = useState<ServiceOrder | null | undefined>(undefined);
-  useEffect(() => setO(getOrder(id) ?? null), [id]);
+  useEffect(() => {
+    lerOS(id)
+      .then((r) => setO(r?.ordem ?? null))
+      .catch(() => setO(null));
+  }, [id]);
   const [company, setCompany] = useState<Company | null>(null);
   useEffect(() => setCompany(loadCompany()), []);
   const docRef = useRef<HTMLElement>(null);
@@ -53,7 +58,7 @@ function OrderView() {
     <main className="mx-auto max-w-3xl px-4 pb-6 pt-5 print:p-0">
       <div className="no-print mb-4 flex flex-wrap items-center justify-end gap-2">
         <Link to="/os/nova" search={{ id: o.id }} className="btn-ghost">Editar</Link>
-        <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta OS?")) { deleteOrder(o.id); nav({ to: "/os" }); } }}>Excluir</button>
+        <button className="btn-ghost" onClick={async () => { if (!confirm("Excluir esta OS?")) return; const ok = await apagarOS(o.id).catch(() => false); if (ok) nav({ to: "/os" }); else alert("Não foi possível excluir. Só admin ou engenheiro excluem OS."); }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>
         <button className="btn-primary" disabled={busy} onClick={async () => { if (!docRef.current) return; setBusy(true); try { await exportElementToPdf(docRef.current, `OS-${String(o.number).padStart(4, "0")}.pdf`, o.client.address || o.client.name); } catch (e) { console.error(e); alert("Não foi possível gerar o PDF."); } finally { setBusy(false); } }}>{busy ? "Gerando..." : "Baixar PDF"}</button>
       </div>

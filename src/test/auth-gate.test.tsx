@@ -11,10 +11,23 @@ import {
 
 const auth = vi.hoisted(() => ({
   getSession: vi.fn(),
+  getUser: vi.fn(async () => ({ data: { user: { id: "u1", email: "a@b.co" } } })),
   signOut: vi.fn(),
   onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
 }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth } }));
+// Consultas ao banco: o perfil (com empresa) e a lista de empreendimentos (vazia).
+const from = vi.hoisted(() => (tabela: string) => {
+  const resultado =
+    tabela === "perfis"
+      ? { data: { id: "u1", nome: "Ana", papel: "admin_empresa", empresa_id: "emp", empresas: { nome: "Construtora Exemplo" } }, error: null }
+      : { data: [], error: null };
+  const q: Record<string, unknown> = {};
+  for (const m of ["select", "eq", "in", "order"]) q[m] = () => q;
+  q["maybeSingle"] = async () => resultado;
+  q["then"] = (ok: (v: unknown) => unknown) => Promise.resolve(resultado).then(ok);
+  return q;
+});
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth, from } }));
 
 import { AuthGate } from "@/components/AuthGate";
 import { isPublicPath } from "@/lib/field-auth";
@@ -47,7 +60,8 @@ describe("AuthGate", () => {
     auth.getSession.mockResolvedValue({ data: { session: { user: { id: "u1", email: "a@b.co" } } } });
     renderAt("/");
     expect(await screen.findByText("Página inicial")).toBeInTheDocument();
-    expect(screen.getByText("a@b.co")).toBeInTheDocument();
+    // o cabeçalho mostra a empresa da pessoa
+    expect(await screen.findByText("Construtora Exemplo")).toBeInTheDocument();
   });
 
   it("Sair ends the Supabase session; the auth listener then sends the user to /login", async () => {
@@ -62,8 +76,10 @@ describe("AuthGate", () => {
       return { error: null };
     });
     const router = renderAt("/");
-    fireEvent.click(await screen.findByRole("button", { name: /sair/i }));
-    expect(await screen.findByText("Tela de login")).toBeInTheDocument();
+    // espera a empresa carregar (cabeçalho completo) antes de tocar em Sair
+    await screen.findByText("Construtora Exemplo");
+    fireEvent.click(screen.getByRole("button", { name: /sair/i }));
+    expect(await screen.findByText("Tela de login", {}, { timeout: 3000 })).toBeInTheDocument();
     expect(auth.signOut).toHaveBeenCalled();
     await waitFor(() => expect(router.state.location.pathname).toBe("/login"));
   });

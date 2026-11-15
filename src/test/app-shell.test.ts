@@ -3,7 +3,10 @@ import { tituloDaRota } from "@/components/AppShell";
 
 describe("título do cabeçalho", () => {
   it("mostra o nome da tela de acordo com a rota", () => {
-    expect(tituloDaRota("/")).toBe("CheckObra");
+    expect(tituloDaRota("/")).toBe("Empreendimentos");
+    expect(tituloDaRota("/empreendimentos/novo")).toBe("Novo empreendimento");
+    expect(tituloDaRota("/empreendimentos/abc")).toBe("Empreendimento");
+    expect(tituloDaRota("/empreendimentos/abc/estrutura")).toBe("Estrutura");
     expect(tituloDaRota("/os")).toBe("Ordens de Serviço");
     expect(tituloDaRota("/os/")).toBe("Ordens de Serviço");
     expect(tituloDaRota("/os/nova")).toBe("Ordem de serviço");
