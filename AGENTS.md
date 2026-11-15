@@ -1,4 +1,4 @@
-- The app runs standalone (no Lovable): plain Vite config, Supabase CLI migrations in `supabase/migrations/`, Node server via Nitro (`npm run build && npm start`).
+- The app runs standalone: plain Vite config, Supabase CLI migrations in `supabase/migrations/`, Node server via Nitro (`npm run build && npm start`).
 - Apartment handover inspections use their own Supabase table with owner-scoped RLS; legacy OS/FVS storage remains unchanged to avoid implicit migration.
 - Keep delivery checklist definitions and validation in a browser-safe domain module, with persistence separate and shared form/report components behind leaf routes.
 - All reports share the PDF pagination helper and photo-row component; mark complete signature groups with data-pdf-block so PDF export and native print keep evidence intact.
