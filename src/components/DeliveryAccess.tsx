@@ -1,8 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
-import "@lovable.dev/cloud-auth-js/styles.css";
 export function DeliveryAccess({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false),
     [signed, setSigned] = useState(false),
@@ -121,10 +119,11 @@ export function DeliveryAccess({ children }: { children: ReactNode }) {
             variant="outline"
             className="google-signin w-full"
             onClick={async () => {
-              const r = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin + "/entregas",
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: { redirectTo: window.location.origin + "/entregas" },
               });
-              if (r.error) setMessage("Não foi possível entrar com Google.");
+              if (error) setMessage("Não foi possível entrar com Google.");
             }}
           >
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24">
@@ -146,17 +145,6 @@ export function DeliveryAccess({ children }: { children: ReactNode }) {
               />
             </svg>
             Continuar com Google
-          </Button>
-          <Button
-            className="lovable-auth-button w-full"
-            onClick={async () => {
-              const r = await lovable.auth.signInWithOAuth("lovable", {
-                redirect_uri: window.location.origin + "/entregas",
-              });
-              if (r.error) setMessage("Não foi possível entrar com Lovable.");
-            }}
-          >
-            Continuar com Lovable
           </Button>
         </>
       )}
