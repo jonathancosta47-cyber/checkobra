@@ -1,21 +1,25 @@
-import { useState, type ReactNode } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
-import { Briefcase, Building2, ClipboardCheck, HardHat, Home, LogOut, Plus } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Building2, ClipboardCheck, FileBarChart, Home, LogOut, Plus, Settings, Wrench, X, type LucideIcon } from "lucide-react";
 import { signOut, type FieldSession } from "@/lib/field-auth";
+import { destinoDoMais, moduloDaRota, MODULOS } from "@/lib/modules";
+import { ICONE_MODULO } from "@/components/modulos";
 
-// Títulos do cabeçalho por rota (só apresentação; as rotas não mudam).
+// Títulos do cabeçalho por rota (só apresentação).
 const TITULOS: [prefixo: string, titulo: string][] = [
+  ["/os/nova", "Ordem de serviço"],
+  ["/os/", "Ordem de serviço"],
+  ["/os", "Ordens de Serviço"],
+  ["/vistorias/nova", "Vistoria de entrega"],
+  ["/vistorias/", "Vistoria de entrega"],
+  ["/vistorias", "Vistorias de entrega"],
   ["/fvs/modelos", "Modelos de FVS"],
-  ["/fvs/nova", "Nova FVS"],
-  ["/fvs/", "Vistoria FVS"],
-  ["/fvs", "Vistorias FVS"],
-  ["/entregas/nova", "Nova entrega"],
-  ["/entregas/", "Entrega"],
-  ["/entregas", "Entregas"],
-  ["/empresa", "Minha empresa"],
-  ["/empreiteiros", "Empreiteiros"],
-  ["/nova", "Nova OS"],
-  ["/ordem/", "Ordem de serviço"],
+  ["/fvs/empreiteiros", "Empreiteiros"],
+  ["/fvs/nova", "Ficha FVS"],
+  ["/fvs/", "Ficha FVS"],
+  ["/fvs", "FVS"],
+  ["/relatorios", "Relatórios"],
+  ["/configuracoes", "Configurações"],
 ];
 export function tituloDaRota(pathname: string) {
   const p = pathname.replace(/\/+$/, "") || "/";
@@ -39,10 +43,10 @@ export function AppShell({ session, children }: { session: FieldSession; childre
 function AppHeader({ title, email }: { title: string; email: string }) {
   const [busy, setBusy] = useState(false);
   return (
-    <header className="obra-cabecalho no-print sticky top-0 z-30 shadow-obra">
-      <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 pb-4 pt-3">
-        <Link to="/" className="obra-icone-btn" aria-label="Início">
-          <HardHat className="h-6 w-6" aria-hidden />
+    <header className="obra-cabecalho no-print relative z-0">
+      <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 pb-10 pt-3">
+        <Link to="/configuracoes" className="obra-icone-btn" aria-label="Configurações da empresa" title="Configurações">
+          <Settings className="h-5 w-5" aria-hidden />
         </Link>
         <div className="min-w-0 flex-1 text-center">
           <h1 className="truncate text-lg font-extrabold leading-tight">{title}</h1>
@@ -69,54 +73,121 @@ function AppHeader({ title, email }: { title: string; email: string }) {
   );
 }
 
-type Item = { to: "/" | "/fvs" | "/entregas" | "/empresa"; label: string; icon: typeof Home; ativo: (p: string) => boolean };
-const ITENS: Item[] = [
-  { to: "/", label: "Início", icon: Home, ativo: (p) => p === "/" || p === "/nova" || p.startsWith("/ordem/") },
-  { to: "/fvs", label: "Vistorias", icon: ClipboardCheck, ativo: (p) => p.startsWith("/fvs") && !p.startsWith("/fvs/nova") },
-  { to: "/entregas", label: "Entregas", icon: Building2, ativo: (p) => p.startsWith("/entregas") },
-  { to: "/empresa", label: "Empresa", icon: Briefcase, ativo: (p) => p.startsWith("/empresa") || p.startsWith("/empreiteiros") },
+type Item = { to: "/" | "/os" | "/vistorias" | "/fvs" | "/relatorios"; label: string; icon: LucideIcon };
+const ESQUERDA: Item[] = [
+  { to: "/", label: "Início", icon: Home },
+  { to: "/os", label: "OS", icon: Wrench },
 ];
+const DIREITA: Item[] = [
+  { to: "/vistorias", label: "Vistorias", icon: Building2 },
+  { to: "/fvs", label: "FVS", icon: ClipboardCheck },
+  { to: "/relatorios", label: "Relatórios", icon: FileBarChart },
+];
+const estaEm = (pathname: string, to: Item["to"]) => (to === "/" ? pathname === "/" : pathname === to || pathname.startsWith(to + "/"));
 
-function BottomNav({ pathname }: { pathname: string }) {
+function BottomNav({ pathname: bruto }: { pathname: string }) {
+  const pathname = bruto.replace(/\/+$/, "") || "/";
+  const navigate = useNavigate();
+  const [menu, setMenu] = useState(false);
+  const destino = destinoDoMais(pathname);
+  useEffect(() => setMenu(false), [pathname]);
+
   const item = (i: Item) => {
-    const ativo = i.ativo(pathname);
+    const ativo = estaEm(pathname, i.to);
     const Icon = i.icon;
     return (
       <Link
         key={i.to}
         to={i.to}
         aria-current={ativo ? "page" : undefined}
-        className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-bold transition ${ativo ? "text-obra-grafite" : "text-obra-suave"}`}
+        className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-bold transition ${ativo ? "text-obra-grafite" : "text-obra-suave"}`}
       >
-        <span className={`flex h-8 w-12 items-center justify-center rounded-full ${ativo ? "bg-obra-bege" : ""}`}>
+        <span className={`flex h-8 w-11 items-center justify-center rounded-full ${ativo ? "bg-obra-bege" : ""}`}>
           <Icon className="h-5 w-5" aria-hidden strokeWidth={ativo ? 2.5 : 2} />
         </span>
-        {i.label}
+        <span className="max-w-full truncate">{i.label}</span>
       </Link>
     );
   };
-  const novaAtiva = pathname.startsWith("/fvs/nova");
+
+  const modulo = moduloDaRota(pathname);
+  const rotuloMais = modulo ? MODULOS[modulo].novoRotulo : "Novo";
+
   return (
-    <nav
-      aria-label="Navegação principal"
-      className="no-print fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-obra-card shadow-[0_-8px_24px_-12px_oklch(0.235_0_0/0.25)]"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="mx-auto grid max-w-md grid-cols-5 items-end px-2 pt-1.5 pb-1.5" style={{ minHeight: "var(--obra-nav-altura)" }}>
-        {ITENS.slice(0, 2).map(item)}
-        <div className="flex flex-col items-center">
-          <Link
-            to="/fvs/nova"
-            aria-label="Nova FVS"
-            aria-current={novaAtiva ? "page" : undefined}
-            className="-mt-9 flex h-16 w-16 items-center justify-center rounded-full bg-obra-laranja text-obra-grafite shadow-obra ring-4 ring-obra-fundo transition hover:bg-obra-laranja-forte active:scale-95"
-          >
-            <Plus className="h-8 w-8" strokeWidth={2.75} aria-hidden />
-          </Link>
-          <span className="mt-1 text-[11px] font-bold text-obra-grafite">Nova FVS</span>
+    <>
+      {menu && <MenuNovo onClose={() => setMenu(false)} />}
+      <nav
+        aria-label="Navegação principal"
+        className="no-print fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-obra-card shadow-[0_-8px_24px_-12px_oklch(0.235_0_0/0.25)]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto grid max-w-lg grid-cols-6 items-end px-1 pt-1.5 pb-1.5" style={{ minHeight: "var(--obra-nav-altura)" }}>
+          {ESQUERDA.map(item)}
+          <div className="flex flex-col items-center">
+            <button
+              type="button"
+              aria-label={destino ? rotuloMais : "Criar novo: escolher módulo"}
+              aria-haspopup={destino ? undefined : "dialog"}
+              aria-expanded={destino ? undefined : menu}
+              onClick={() => (destino ? navigate({ to: destino as "/os/nova" | "/vistorias/nova" | "/fvs/nova" }) : setMenu((v) => !v))}
+              className="-mt-9 flex h-16 w-16 items-center justify-center rounded-full bg-obra-laranja text-obra-grafite shadow-obra ring-4 ring-obra-fundo transition hover:bg-obra-laranja-forte active:scale-95"
+            >
+              {menu ? <X className="h-8 w-8" strokeWidth={2.75} aria-hidden /> : <Plus className="h-8 w-8" strokeWidth={2.75} aria-hidden />}
+            </button>
+            <span className="mt-1 max-w-full truncate text-[11px] font-bold text-obra-grafite">{rotuloMais}</span>
+          </div>
+          {DIREITA.map(item)}
         </div>
-        {ITENS.slice(2).map(item)}
+      </nav>
+    </>
+  );
+}
+
+// Menu do "+" na Início e em Relatórios: escolher o que criar.
+function MenuNovo({ onClose }: { onClose: () => void }) {
+  const primeiro = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    primeiro.current?.focus();
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [onClose]);
+  const opcoes = [
+    { m: "os" as const, to: "/os/nova" as const, desc: "Manutenção com cliente, fotos e assinaturas" },
+    { m: "vistorias" as const, to: "/vistorias/nova" as const, desc: "Entrega de unidade: cômodos e pendências" },
+    { m: "fvs" as const, to: "/fvs/nova" as const, desc: "Ficha de verificação de serviço da obra" },
+  ];
+  return (
+    <div className="no-print fixed inset-0 z-30" role="dialog" aria-modal="true" aria-label="O que você quer criar?">
+      <button type="button" className="absolute inset-0 bg-obra-grafite/40" aria-label="Fechar menu" onClick={onClose} />
+      <div
+        className="absolute inset-x-0 mx-auto max-w-lg px-3"
+        style={{ bottom: "calc(var(--obra-nav-altura) + env(safe-area-inset-bottom) + 1.25rem)" }}
+      >
+        <ul className="obra-card space-y-1 p-2">
+          {opcoes.map((o, k) => {
+            const Icone = ICONE_MODULO[o.m];
+            return (
+              <li key={o.m}>
+                <Link
+                  ref={k === 0 ? primeiro : undefined}
+                  to={o.to}
+                  onClick={onClose}
+                  className="flex min-h-16 items-center gap-3 rounded-2xl px-3 py-2 transition hover:bg-obra-fundo focus:bg-obra-fundo"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-obra-laranja text-obra-grafite">
+                    <Icone className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-extrabold text-obra-grafite">{MODULOS[o.m].novoRotulo}</span>
+                    <span className="block truncate text-xs text-obra-suave">{o.desc}</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-    </nav>
+    </div>
   );
 }

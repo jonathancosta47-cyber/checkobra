@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { loadTemplates, saveTemplates, type FvsTemplate } from "@/lib/fvs";
 
@@ -23,9 +23,7 @@ function Templates() {
   const update = (i: number, t: FvsTemplate) => { setSaved(false); setList(list.map((x, j) => (j === i ? t : x))); };
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6">
-      <Link to="/fvs" className="text-sm text-muted-foreground">← Vistorias FVS</Link>
-      <h1 className="mb-6 mt-2 font-display text-3xl font-bold">Modelos de FVS</h1>
+    <main className="mx-auto max-w-3xl px-4 pb-6 pt-5">
       <div className="space-y-5">
         {list.map((t, i) => (
           <section key={t.id} className="panel space-y-3">

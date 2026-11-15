@@ -62,7 +62,7 @@ export function DeliveryAccess({ children }: { children: ReactNode }) {
             const { data, error } =
               mode === "reset"
                 ? await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + "/entregas/senha",
+                    redirectTo: window.location.origin + "/redefinir-senha",
                   })
                 : mode === "signup"
                   ? await supabase.auth.signUp({
@@ -117,7 +117,7 @@ export function DeliveryAccess({ children }: { children: ReactNode }) {
             onClick={async () => {
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
-                options: { redirectTo: window.location.origin + "/entregas" },
+                options: { redirectTo: window.location.origin + "/vistorias" },
               });
               if (error) setMessage("Não foi possível entrar com Google.");
             }}

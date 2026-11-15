@@ -228,6 +228,10 @@
   --obra-ok-fundo: oklch(0.9518 0.0223 160.22);      /* #E3F4EA conforme (fundo) */
   --obra-nc: oklch(0.4911 0.1610 28.62);             /* #A92E25 não conforme (texto) */
   --obra-nc-fundo: oklch(0.9391 0.0243 23.85);       /* #FBE5E3 não conforme (fundo) */
+  --obra-laranja-texto: oklch(0.5087 0.1017 70.44);  /* #8A5A14 laranja para TEXTO (5,9:1 no branco) */
+  --obra-borda-campo: oklch(0.6391 0.0243 73.96);    /* #958A7C borda de campos (3,4:1 no branco) */
+  --obra-info: oklch(0.3791 0.1378 265.52);          /* #1E3A8A "em andamento" (texto) */
+  --obra-info-fundo: oklch(0.9296 0.0317 272.79);    /* #E0E7FF "em andamento" (fundo) */
   --obra-raio: 18px;                                 /* cantos dos cards */
   --obra-raio-cabecalho: 28px;                       /* cantos inferiores do cabeçalho */
   --obra-sombra: 0 8px 24px -10px oklch(0.2350 0 0 / 0.22);
@@ -248,6 +252,10 @@
   --color-obra-ok-fundo: var(--obra-ok-fundo);
   --color-obra-nc: var(--obra-nc);
   --color-obra-nc-fundo: var(--obra-nc-fundo);
+  --color-obra-laranja-texto: var(--obra-laranja-texto);
+  --color-obra-borda-campo: var(--obra-borda-campo);
+  --color-obra-info: var(--obra-info);
+  --color-obra-info-fundo: var(--obra-info-fundo);
   --radius-obra: var(--obra-raio);
   --shadow-obra: var(--obra-sombra);
 }
@@ -290,4 +298,49 @@
   .obra-link { @apply inline-flex items-center justify-center px-3 text-sm font-bold text-obra-grafite underline decoration-obra-laranja decoration-2 underline-offset-4; min-height: var(--obra-toque); }
   /* espaço para o conteúdo não ficar atrás da barra inferior */
   .obra-com-nav { padding-bottom: calc(var(--obra-nav-altura) + env(safe-area-inset-bottom) + 1rem); }
+}
+
+/* ── Tema obra aplicado às classes antigas (formulários e relatórios de todos os módulos).
+ *    As variáveis semânticas do Tailwind passam a apontar para a paleta acima. ── */
+:root {
+  --background: var(--obra-fundo);
+  --foreground: var(--obra-grafite);
+  --card: var(--obra-card);
+  --card-foreground: var(--obra-grafite);
+  --popover: var(--obra-card);
+  --popover-foreground: var(--obra-grafite);
+  --primary: var(--obra-laranja);
+  --primary-foreground: var(--obra-grafite);
+  --secondary: var(--obra-bege);
+  --secondary-foreground: var(--obra-grafite);
+  --muted: var(--obra-bege);
+  --muted-foreground: var(--obra-suave);
+  --accent: var(--obra-bege);
+  --accent-foreground: var(--obra-grafite);
+  --border: var(--obra-borda);
+  --input: var(--obra-borda-campo);
+  --ring: var(--obra-laranja-forte);
+  --success: var(--obra-ok);
+  --destructive: var(--obra-nc);
+  --info: var(--obra-info);
+}
+
+@layer components {
+  .panel { @apply rounded-obra border-0 bg-obra-card p-4 shadow-obra sm:p-5; }
+  .eyebrow { @apply font-display text-xs font-extrabold uppercase tracking-[0.14em] text-obra-suave; }
+  .field { @apply rounded-2xl border-obra-borda-campo bg-obra-card focus:border-obra-laranja-forte focus:ring-4 focus:ring-obra-laranja/30; min-height: var(--obra-toque); }
+  .btn-primary { @apply gap-2 rounded-2xl bg-obra-laranja px-6 font-extrabold text-obra-grafite hover:bg-obra-laranja-forte disabled:opacity-60; min-height: var(--obra-toque); }
+  .btn-ghost { @apply justify-center gap-1.5 rounded-2xl border-obra-borda bg-obra-card px-4 font-bold text-obra-grafite hover:bg-obra-fundo; min-height: var(--obra-toque); }
+  .badge { @apply inline-flex items-center gap-1; }
+  .badge-aberta { @apply bg-obra-bege text-obra-laranja-texto; }
+  .badge-em_andamento { @apply bg-obra-info-fundo text-obra-info; }
+  .badge-concluida { @apply bg-obra-ok-fundo text-obra-ok; }
+  .badge-nc { @apply bg-obra-nc-fundo text-obra-nc; }
+  .report-head { @apply rounded-obra bg-obra-laranja text-obra-grafite; }
+  .report-head .text-obra-laranja-texto, .report-head .eyebrow { @apply text-obra-grafite; }
+  .report-section-title { @apply border-obra-laranja text-obra-grafite; }
+  .report-table tbody tr:nth-child(even) { @apply bg-obra-fundo; }
+}
+@media print {
+  .panel { box-shadow: none; }
 }

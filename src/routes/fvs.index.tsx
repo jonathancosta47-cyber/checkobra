@@ -1,57 +1,86 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { HardHat, ListChecks } from "lucide-react";
 import { loadInspections, type FvsInspection } from "@/lib/fvs";
+import { filtrarFvs, modelosDasFvs, ncDaFvs, obrasDasFvs, progressoFvs, type FiltroPendencia } from "@/lib/modules";
+import { BuscaCard, CardItem, Etiqueta, Pagina, Pilulas, SeletorFiltro, Vazio } from "@/components/modulos";
 
 export const Route = createFileRoute("/fvs/")({
   head: () => ({
     meta: [
-      { title: "FVS — Fichas de Verificação de Serviço" },
-      { name: "description", content: "Vistorias FVS para obras com checklist, fotos e assinatura." },
-      { property: "og:title", content: "FVS — Fichas de Verificação de Serviço" },
-      { property: "og:description", content: "Vistorias de obra com checklist e assinatura." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { title: "FVS — Ficha de Verificação de Serviço — CheckObra" },
+      { name: "description", content: "Fichas de verificação de serviço da obra." },
     ],
   }),
-  component: FvsList,
+  component: ListaFvs,
 });
 
-function FvsList() {
+const FILTROS: { v: FiltroPendencia; l: string }[] = [
+  { v: "todas", l: "Todas" },
+  { v: "com", l: "Com NC" },
+  { v: "sem", l: "Sem NC" },
+];
+
+function ListaFvs() {
   const [list, setList] = useState<FvsInspection[]>([]);
+  const [q, setQ] = useState("");
+  const [nc, setNc] = useState<FiltroPendencia>("todas");
+  const [obra, setObra] = useState("");
+  const [modelo, setModelo] = useState("");
   useEffect(() => setList(loadInspections()), []);
+  const lista = filtrarFvs(list, { q, nc, obra, modelo });
+
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 pb-28 pt-6">
-      <Link to="/" className="text-sm text-muted-foreground">← Ordens de serviço</Link>
-      <header className="mb-6 mt-2 flex items-end justify-between gap-3">
-        <div><p className="eyebrow">Obras</p><h1 className="font-display text-4xl font-bold">Vistorias FVS</h1></div>
-        <div className="flex flex-wrap justify-end gap-2"><Link to="/empreiteiros" className="btn-ghost">Empreiteiros</Link><Link to="/fvs/modelos" className="btn-ghost">Modelos de FVS</Link></div>
-      </header>
-      <Link to="/entregas" className="btn-ghost mb-5">Entrega de apartamentos →</Link>
-      {list.length === 0 ? (
-        <div className="panel text-center text-muted-foreground">
-          <p className="font-display text-lg text-foreground">Nenhuma vistoria ainda</p>
-          <p className="mt-1 text-sm">Toque em “Nova FVS” para começar.</p>
+    <Pagina>
+      <BuscaCard label="Buscar FVS" placeholder="Nº, modelo, obra, local ou responsável" value={q} onChange={setQ} />
+
+      {/* Ajustes do módulo FVS */}
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Link to="/fvs/modelos" className="btn-ghost">
+          <ListChecks className="h-4 w-4" aria-hidden /> Modelos
+        </Link>
+        <Link to="/fvs/empreiteiros" className="btn-ghost">
+          <HardHat className="h-4 w-4" aria-hidden /> Empreiteiros
+        </Link>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <Pilulas label="Filtrar por não conformidade" opcoes={FILTROS} valor={nc} onChange={setNc} />
+        <div className="flex gap-2">
+          <SeletorFiltro label="Filtrar por obra" todos="Todas as obras" valor={obra} onChange={setObra} opcoes={obrasDasFvs(list)} />
+          <SeletorFiltro label="Filtrar por modelo" todos="Todos os modelos" valor={modelo} onChange={setModelo} opcoes={modelosDasFvs(list)} />
         </div>
+      </div>
+
+      <p className="mb-3 mt-4 text-sm font-bold text-obra-suave">
+        {lista.length} de {list.length} fichas
+      </p>
+      {lista.length === 0 ? (
+        <Vazio
+          modulo="fvs"
+          titulo={list.length ? "Nenhuma FVS com esses filtros" : "Nenhuma FVS ainda"}
+          texto={list.length ? "Limpe a busca ou escolha outro filtro." : "Toque no + para preencher a primeira."}
+        />
       ) : (
-        <ul className="space-y-3">
-          {list.map((i) => {
-            const nc = i.items.filter((x) => x.result === "NC").length;
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {lista.map((i) => {
+            const n = ncDaFvs(i);
             return (
-              <li key={i.id}>
-                <Link to="/fvs/$id" params={{ id: i.id }} className="panel flex items-center gap-4 transition hover:border-primary">
-                  <span className="font-display text-2xl font-bold text-primary">#{String(i.number).padStart(4, "0")}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{i.templateName}</p>
-                    <p className="truncate text-sm text-muted-foreground">{i.obra || "—"} · {i.local || "—"} · {new Date(i.createdAt).toLocaleDateString("pt-BR")}</p>
-                  </div>
-                  <span className={`badge ${nc ? "badge-aberta" : "badge-concluida"}`}>{nc ? `${nc} NC` : "OK"}</span>
-                </Link>
-              </li>
+              <CardItem
+                key={i.id}
+                modulo="fvs"
+                id={i.id}
+                foto={i.photos[0]}
+                numero={`FVS #${String(i.number).padStart(4, "0")} · ${new Date(i.createdAt).toLocaleDateString("pt-BR")}`}
+                titulo={i.templateName || "Sem modelo"}
+                detalhe={[i.obra, i.local].filter(Boolean).join(" · ") || "—"}
+                etiqueta={n ? <Etiqueta tom="nc">{n} NC</Etiqueta> : <Etiqueta tom="ok">Conforme</Etiqueta>}
+                progresso={progressoFvs(i)}
+              />
             );
           })}
         </ul>
       )}
-      <Link to="/fvs/nova" className="btn-primary fixed bottom-[calc(var(--obra-nav-altura)+env(safe-area-inset-bottom)+1rem)] left-1/2 -translate-x-1/2 shadow-lg">+ Nova FVS</Link>
-    </main>
+    </Pagina>
   );
 }

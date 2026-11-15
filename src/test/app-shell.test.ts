@@ -4,15 +4,18 @@ import { tituloDaRota } from "@/components/AppShell";
 describe("título do cabeçalho", () => {
   it("mostra o nome da tela de acordo com a rota", () => {
     expect(tituloDaRota("/")).toBe("CheckObra");
-    expect(tituloDaRota("/fvs")).toBe("Vistorias FVS");
-    expect(tituloDaRota("/fvs/")).toBe("Vistorias FVS");
-    expect(tituloDaRota("/fvs/nova")).toBe("Nova FVS");
+    expect(tituloDaRota("/os")).toBe("Ordens de Serviço");
+    expect(tituloDaRota("/os/")).toBe("Ordens de Serviço");
+    expect(tituloDaRota("/os/nova")).toBe("Ordem de serviço");
+    expect(tituloDaRota("/os/abc")).toBe("Ordem de serviço");
+    expect(tituloDaRota("/vistorias")).toBe("Vistorias de entrega");
+    expect(tituloDaRota("/vistorias/abc")).toBe("Vistoria de entrega");
+    expect(tituloDaRota("/fvs")).toBe("FVS");
+    expect(tituloDaRota("/fvs/nova")).toBe("Ficha FVS");
+    expect(tituloDaRota("/fvs/123")).toBe("Ficha FVS");
     expect(tituloDaRota("/fvs/modelos")).toBe("Modelos de FVS");
-    expect(tituloDaRota("/fvs/123")).toBe("Vistoria FVS");
-    expect(tituloDaRota("/entregas")).toBe("Entregas");
-    expect(tituloDaRota("/entregas/abc")).toBe("Entrega");
-    expect(tituloDaRota("/ordem/abc")).toBe("Ordem de serviço");
-    expect(tituloDaRota("/nova")).toBe("Nova OS");
-    expect(tituloDaRota("/empresa")).toBe("Minha empresa");
+    expect(tituloDaRota("/fvs/empreiteiros")).toBe("Empreiteiros");
+    expect(tituloDaRota("/relatorios")).toBe("Relatórios");
+    expect(tituloDaRota("/configuracoes")).toBe("Configurações");
   });
 });

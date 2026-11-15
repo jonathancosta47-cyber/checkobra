@@ -61,9 +61,8 @@ function NewFvs() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6">
-      <Link to="/fvs" className="text-sm text-muted-foreground">← Voltar</Link>
-      <h1 className="mb-6 mt-2 font-display text-3xl font-bold">FVS <span className="text-primary">#{String(f.number).padStart(4, "0")}</span></h1>
+    <main className="mx-auto max-w-3xl px-4 pb-6 pt-5">
+      <h1 className="mb-5 font-display text-3xl font-bold">FVS <span className="text-obra-laranja-texto">#{String(f.number).padStart(4, "0")}</span></h1>
       <form onSubmit={submit} className="space-y-5">
         <section className="panel space-y-3">
           <h2 className="eyebrow">Identificação</h2>
@@ -71,7 +70,7 @@ function NewFvs() {
             <option value="" disabled>{f.templateName || "Escolha o serviço (modelo de FVS) *"}</option>
             {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
-          <Link to="/fvs/modelos" className="text-sm text-primary">Criar ou editar modelos de FVS →</Link>
+          <Link to="/fvs/modelos" className="text-sm text-obra-laranja-texto">Criar ou editar modelos de FVS →</Link>
           <input className="field" placeholder="Obra" value={f.obra} onChange={(e) => set({ obra: e.target.value })} />
           <div className="grid gap-3 sm:grid-cols-2">
             <input className="field" placeholder="Local (bloco, pavimento, unidade)" value={f.local} onChange={(e) => set({ local: e.target.value })} />
@@ -84,8 +83,8 @@ function NewFvs() {
           <input className="field" list="empreiteiros" placeholder="Responsável pela execução (empreiteiro)" value={f.executor ?? ""} onChange={(e) => set({ executor: e.target.value })} />
           <datalist id="empreiteiros">{contractors.map((c) => <option key={c.id} value={c.name} />)}</datalist>
           {f.executor && f.templateName && (findContract(contractors, f.executor, f.templateName)
-            ? <p className="text-xs text-primary">Valores preenchidos pelo contrato do empreiteiro.</p>
-            : <p className="text-xs text-muted-foreground">Sem contrato para este serviço. <Link to="/empreiteiros" className="text-primary">Cadastrar empreiteiros →</Link></p>)}
+            ? <p className="text-xs text-obra-laranja-texto">Valores preenchidos pelo contrato do empreiteiro.</p>
+            : <p className="text-xs text-muted-foreground">Sem contrato para este serviço. <Link to="/fvs/empreiteiros" className="text-obra-laranja-texto">Cadastrar empreiteiros →</Link></p>)}
           <h3 className="eyebrow">Efetivo na atividade</h3>
           {(f.crewList ?? []).map((m, k) => (
             <div key={k} className="grid grid-cols-[5rem_1fr_auto] gap-2">
@@ -101,7 +100,7 @@ function NewFvs() {
             <input className="field" inputMode="decimal" placeholder="Quantidade" value={f.quantity ?? ""} onChange={(e) => set({ quantity: e.target.value })} />
             <input className="field" inputMode="decimal" placeholder="Valor unit. (R$)" value={f.unitPrice ?? ""} onChange={(e) => set({ unitPrice: e.target.value })} />
           </div>
-          <p className="text-right font-display text-xl font-bold">Total: <span className="text-primary">{brl(fvsTotal(f))}</span></p>
+          <p className="text-right font-display text-xl font-bold">Total: <span className="text-obra-laranja-texto">{brl(fvsTotal(f))}</span></p>
         </section>
 
         {f.items.length > 0 && (
@@ -136,7 +135,7 @@ function NewFvs() {
               </div>
             ))}
             <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border text-sm text-muted-foreground">
-              <span className="text-2xl text-primary">+</span>Adicionar
+              <span className="text-2xl text-obra-laranja-texto">+</span>Adicionar
               <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
                 const files = e.target.files; if (!files) return;
                 const imgs = await Promise.all(Array.from(files).map((x) => compressImage(x)));

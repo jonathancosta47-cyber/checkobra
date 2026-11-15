@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 // Páginas que abrem sem login.
-export const PUBLIC_PATHS = ["/login", "/entregas/senha"];
+export const PUBLIC_PATHS = ["/login", "/redefinir-senha", "/entregas/senha"];
 export const isPublicPath = (path: string) => PUBLIC_PATHS.includes(path.replace(/\/+$/, "") || "/");
 
 export interface FieldSession {
@@ -145,7 +145,7 @@ export async function signOut() {
 export async function requestPasswordReset(email: string): Promise<boolean> {
   if (validateCredentials(email, "x")) return false;
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: window.location.origin + "/entregas/senha",
+    redirectTo: window.location.origin + "/redefinir-senha",
   });
   return !error;
 }

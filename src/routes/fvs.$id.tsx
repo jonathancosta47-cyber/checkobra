@@ -33,13 +33,12 @@ function FvsView() {
   useEffect(() => { setF(getInspection(id) ?? null); setCompany(loadCompany()); }, [id]);
 
   if (f === undefined) return null;
-  if (f === null) return <main className="p-8 text-center"><p>Vistoria não encontrada.</p><Link to="/fvs" className="text-primary">Voltar</Link></main>;
+  if (f === null) return <main className="p-8 text-center"><p>Vistoria não encontrada.</p><Link to="/fvs" className="text-obra-laranja-texto">Voltar</Link></main>;
   const num = String(f.number).padStart(4, "0");
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-16 pt-6 print:p-0">
-      <div className="no-print mb-4 flex flex-wrap items-center gap-2">
-        <Link to="/fvs" className="mr-auto text-sm text-muted-foreground">← Voltar</Link>
+    <main className="mx-auto max-w-3xl px-4 pb-6 pt-5 print:p-0">
+      <div className="no-print mb-4 flex flex-wrap items-center justify-end gap-2">
         <Link to="/fvs/nova" search={{ id: f.id }} className="btn-ghost">Editar</Link>
         <button className="btn-ghost" onClick={() => { if (confirm("Excluir esta FVS?")) { deleteInspection(f.id); nav({ to: "/fvs" }); } }}>Excluir</button>
         <button className="btn-ghost" onClick={() => window.print()}>Imprimir</button>

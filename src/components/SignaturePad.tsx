@@ -76,7 +76,7 @@ export function SignaturePad({ value, onChange }: { value: string | null; onChan
       />
       <div className="mt-2 flex justify-between text-xs text-muted-foreground">
         <span>Assine com o dedo ou mouse</span>
-        <Button variant="link" type="button" onClick={clear} className="h-auto p-0 text-xs font-semibold text-primary">
+        <Button variant="link" type="button" onClick={clear} className="h-auto p-0 text-xs font-semibold text-obra-laranja-texto">
           Limpar
         </Button>
       </div>

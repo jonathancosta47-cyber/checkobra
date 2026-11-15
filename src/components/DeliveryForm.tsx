@@ -53,7 +53,7 @@ export function DeliveryForm({ initial }: { initial: Delivery }) {
         setError("");
         try {
           await saveDelivery(d);
-          await nav({ to: "/entregas/$id", params: { id: d.id } });
+          await nav({ to: "/vistorias/$id", params: { id: d.id } });
         } catch {
           setError("Não foi possível salvar a vistoria. Confira sua conexão e tente novamente.");
         } finally {
@@ -97,7 +97,7 @@ export function DeliveryForm({ initial }: { initial: Delivery }) {
         </label>
         {d.rooms.map((room, ri) => (
           <details key={room.id} open={ri === 0} className="border-b border-border pb-3">
-            <summary className="cursor-pointer py-3 font-bold text-primary">
+            <summary className="cursor-pointer py-3 font-bold text-obra-laranja-texto">
               {room.name}{" "}
               <span className="font-normal text-muted-foreground">
                 ({room.items.filter((i) => i.result !== null).length}/{room.items.length})
