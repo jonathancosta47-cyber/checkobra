@@ -144,13 +144,13 @@ describe("assistente: criar_empreendimento gera a estrutura", () => {
     const de = Object.fromEntries(ids.rows.map((r) => [r.tipo, r.id]));
     await asUser(db, ADMIN_A, async (tx) => {
       await tx.query("insert into locais (empreendimento_id, tipo, nome) values ($1, 'area_comum', 'Portaria')", [empA]);
-      await tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'area_comum', 'Hall')", [empA, de.pavimento]);
+      await tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'area_comum', 'Hall')", [empA, de["pavimento"]]);
     });
     expect(
-      await pgErrorCode(asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'area_comum', 'X')", [empA, de.unidade]))),
+      await pgErrorCode(asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'area_comum', 'X')", [empA, de["unidade"]]))),
     ).toBe("23514");
     expect(
-      await pgErrorCode(asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'torre', 'X')", [empA, de.torre]))),
+      await pgErrorCode(asUser(db, ADMIN_A, (tx) => tx.query("insert into locais (empreendimento_id, pai_id, tipo, nome) values ($1, $2, 'torre', 'X')", [empA, de["torre"]]))),
     ).toBe("23514");
   });
 });
