@@ -10,23 +10,38 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as EmpreiteirosRouteImport } from './routes/empreiteiros'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NovaRouteImport } from './routes/nova'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as EntregasIndexRouteImport } from './routes/entregas.index'
 import { Route as EntregasIdRouteImport } from './routes/entregas.$id'
 import { Route as EntregasNovaRouteImport } from './routes/entregas.nova'
 import { Route as EntregasSenhaRouteImport } from './routes/entregas.senha'
 import { Route as FvsIndexRouteImport } from './routes/fvs.index'
 import { Route as FvsIdRouteImport } from './routes/fvs.$id'
+import { Route as FvsEmpreiteirosRouteImport } from './routes/fvs.empreiteiros'
 import { Route as FvsModelosRouteImport } from './routes/fvs.modelos'
 import { Route as FvsNovaRouteImport } from './routes/fvs.nova'
 import { Route as OrdemIdRouteImport } from './routes/ordem.$id'
+import { Route as OsIndexRouteImport } from './routes/os.index'
+import { Route as OsIdRouteImport } from './routes/os.$id'
+import { Route as OsNovaRouteImport } from './routes/os.nova'
+import { Route as VistoriasIndexRouteImport } from './routes/vistorias.index'
+import { Route as VistoriasIdRouteImport } from './routes/vistorias.$id'
+import { Route as VistoriasNovaRouteImport } from './routes/vistorias.nova'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpreiteirosRoute = EmpreiteirosRouteImport.update({
@@ -47,6 +62,16 @@ const LoginRoute = LoginRouteImport.update({
 const NovaRoute = NovaRouteImport.update({
   id: '/nova',
   path: '/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntregasIndexRoute = EntregasIndexRouteImport.update({
@@ -79,6 +104,11 @@ const FvsIdRoute = FvsIdRouteImport.update({
   path: '/fvs/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FvsEmpreiteirosRoute = FvsEmpreiteirosRouteImport.update({
+  id: '/fvs/empreiteiros',
+  path: '/fvs/empreiteiros',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FvsModelosRoute = FvsModelosRouteImport.update({
   id: '/fvs/modelos',
   path: '/fvs/modelos',
@@ -94,122 +124,222 @@ const OrdemIdRoute = OrdemIdRouteImport.update({
   path: '/ordem/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OsIndexRoute = OsIndexRouteImport.update({
+  id: '/os/',
+  path: '/os/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OsIdRoute = OsIdRouteImport.update({
+  id: '/os/$id',
+  path: '/os/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OsNovaRoute = OsNovaRouteImport.update({
+  id: '/os/nova',
+  path: '/os/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VistoriasIndexRoute = VistoriasIndexRouteImport.update({
+  id: '/vistorias/',
+  path: '/vistorias/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VistoriasIdRoute = VistoriasIdRouteImport.update({
+  id: '/vistorias/$id',
+  path: '/vistorias/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VistoriasNovaRoute = VistoriasNovaRouteImport.update({
+  id: '/vistorias/nova',
+  path: '/vistorias/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
   '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
+  '/fvs/empreiteiros': typeof FvsEmpreiteirosRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/os/$id': typeof OsIdRoute
+  '/os/nova': typeof OsNovaRoute
+  '/vistorias/$id': typeof VistoriasIdRoute
+  '/vistorias/nova': typeof VistoriasNovaRoute
   '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
+  '/os/': typeof OsIndexRoute
+  '/vistorias/': typeof VistoriasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
   '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
+  '/fvs/empreiteiros': typeof FvsEmpreiteirosRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/os/$id': typeof OsIdRoute
+  '/os/nova': typeof OsNovaRoute
+  '/vistorias/$id': typeof VistoriasIdRoute
+  '/vistorias/nova': typeof VistoriasNovaRoute
   '/entregas': typeof EntregasIndexRoute
   '/fvs': typeof FvsIndexRoute
+  '/os': typeof OsIndexRoute
+  '/vistorias': typeof VistoriasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/relatorios': typeof RelatoriosRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
   '/entregas/senha': typeof EntregasSenhaRoute
   '/fvs/$id': typeof FvsIdRoute
+  '/fvs/empreiteiros': typeof FvsEmpreiteirosRoute
   '/fvs/modelos': typeof FvsModelosRoute
   '/fvs/nova': typeof FvsNovaRoute
   '/ordem/$id': typeof OrdemIdRoute
+  '/os/$id': typeof OsIdRoute
+  '/os/nova': typeof OsNovaRoute
+  '/vistorias/$id': typeof VistoriasIdRoute
+  '/vistorias/nova': typeof VistoriasNovaRoute
   '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
+  '/os/': typeof OsIndexRoute
+  '/vistorias/': typeof VistoriasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
+    | '/redefinir-senha'
+    | '/relatorios'
     | '/entregas/$id'
     | '/entregas/nova'
     | '/entregas/senha'
     | '/fvs/$id'
+    | '/fvs/empreiteiros'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/os/$id'
+    | '/os/nova'
+    | '/vistorias/$id'
+    | '/vistorias/nova'
     | '/entregas/'
     | '/fvs/'
+    | '/os/'
+    | '/vistorias/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
+    | '/redefinir-senha'
+    | '/relatorios'
     | '/entregas/$id'
     | '/entregas/nova'
     | '/entregas/senha'
     | '/fvs/$id'
+    | '/fvs/empreiteiros'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/os/$id'
+    | '/os/nova'
+    | '/vistorias/$id'
+    | '/vistorias/nova'
     | '/entregas'
     | '/fvs'
+    | '/os'
+    | '/vistorias'
   id:
     | '__root__'
     | '/'
+    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
+    | '/redefinir-senha'
+    | '/relatorios'
     | '/entregas/$id'
     | '/entregas/nova'
     | '/entregas/senha'
     | '/fvs/$id'
+    | '/fvs/empreiteiros'
     | '/fvs/modelos'
     | '/fvs/nova'
     | '/ordem/$id'
+    | '/os/$id'
+    | '/os/nova'
+    | '/vistorias/$id'
+    | '/vistorias/nova'
     | '/entregas/'
     | '/fvs/'
+    | '/os/'
+    | '/vistorias/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   EmpreiteirosRoute: typeof EmpreiteirosRoute
   EmpresaRoute: typeof EmpresaRoute
   LoginRoute: typeof LoginRoute
   NovaRoute: typeof NovaRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   EntregasIdRoute: typeof EntregasIdRoute
   EntregasNovaRoute: typeof EntregasNovaRoute
   EntregasSenhaRoute: typeof EntregasSenhaRoute
   FvsIdRoute: typeof FvsIdRoute
+  FvsEmpreiteirosRoute: typeof FvsEmpreiteirosRoute
   FvsModelosRoute: typeof FvsModelosRoute
   FvsNovaRoute: typeof FvsNovaRoute
   OrdemIdRoute: typeof OrdemIdRoute
+  OsIdRoute: typeof OsIdRoute
+  OsNovaRoute: typeof OsNovaRoute
+  VistoriasIdRoute: typeof VistoriasIdRoute
+  VistoriasNovaRoute: typeof VistoriasNovaRoute
   EntregasIndexRoute: typeof EntregasIndexRoute
   FvsIndexRoute: typeof FvsIndexRoute
+  OsIndexRoute: typeof OsIndexRoute
+  VistoriasIndexRoute: typeof VistoriasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -219,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empreiteiros': {
@@ -247,6 +384,20 @@ declare module '@tanstack/react-router' {
       path: '/nova'
       fullPath: '/nova'
       preLoaderRoute: typeof NovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entregas/': {
@@ -291,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FvsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fvs/empreiteiros': {
+      id: '/fvs/empreiteiros'
+      path: '/fvs/empreiteiros'
+      fullPath: '/fvs/empreiteiros'
+      preLoaderRoute: typeof FvsEmpreiteirosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fvs/modelos': {
       id: '/fvs/modelos'
       path: '/fvs/modelos'
@@ -312,24 +470,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdemIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/os/': {
+      id: '/os/'
+      path: '/os'
+      fullPath: '/os/'
+      preLoaderRoute: typeof OsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/os/$id': {
+      id: '/os/$id'
+      path: '/os/$id'
+      fullPath: '/os/$id'
+      preLoaderRoute: typeof OsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/os/nova': {
+      id: '/os/nova'
+      path: '/os/nova'
+      fullPath: '/os/nova'
+      preLoaderRoute: typeof OsNovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vistorias/': {
+      id: '/vistorias/'
+      path: '/vistorias'
+      fullPath: '/vistorias/'
+      preLoaderRoute: typeof VistoriasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vistorias/$id': {
+      id: '/vistorias/$id'
+      path: '/vistorias/$id'
+      fullPath: '/vistorias/$id'
+      preLoaderRoute: typeof VistoriasIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vistorias/nova': {
+      id: '/vistorias/nova'
+      path: '/vistorias/nova'
+      fullPath: '/vistorias/nova'
+      preLoaderRoute: typeof VistoriasNovaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   EmpreiteirosRoute: EmpreiteirosRoute,
   EmpresaRoute: EmpresaRoute,
   LoginRoute: LoginRoute,
   NovaRoute: NovaRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
+  RelatoriosRoute: RelatoriosRoute,
   EntregasIdRoute: EntregasIdRoute,
   EntregasNovaRoute: EntregasNovaRoute,
   EntregasSenhaRoute: EntregasSenhaRoute,
   FvsIdRoute: FvsIdRoute,
+  FvsEmpreiteirosRoute: FvsEmpreiteirosRoute,
   FvsModelosRoute: FvsModelosRoute,
   FvsNovaRoute: FvsNovaRoute,
   OrdemIdRoute: OrdemIdRoute,
+  OsIdRoute: OsIdRoute,
+  OsNovaRoute: OsNovaRoute,
+  VistoriasIdRoute: VistoriasIdRoute,
+  VistoriasNovaRoute: VistoriasNovaRoute,
   EntregasIndexRoute: EntregasIndexRoute,
   FvsIndexRoute: FvsIndexRoute,
+  OsIndexRoute: OsIndexRoute,
+  VistoriasIndexRoute: VistoriasIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
