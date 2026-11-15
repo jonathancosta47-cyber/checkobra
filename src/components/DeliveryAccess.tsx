@@ -30,14 +30,10 @@ export function DeliveryAccess({ children }: { children: ReactNode }) {
         Carregando…
       </p>
     );
+  // O botão Sair fica na barra do topo (AuthGate), comum a todas as páginas.
   if (signed)
     return (
       <>
-        <div className="no-print mb-4 flex justify-end">
-          <Button variant="ghost" onClick={() => supabase.auth.signOut()}>
-            Sair da conta
-          </Button>
-        </div>
         {children}
       </>
     );
