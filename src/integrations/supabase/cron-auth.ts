@@ -1,4 +1,4 @@
-// Supabase integration (originally scaffolded by Lovable; now maintained here).
+// Supabase integration.
 export async function authenticateCronRequest(
   request: Request,
 ): Promise<Response | null> {

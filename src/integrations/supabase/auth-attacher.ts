@@ -1,4 +1,4 @@
-// Supabase integration (originally scaffolded by Lovable; now maintained here).
+// Supabase integration.
 import { createMiddleware } from '@tanstack/react-start'
 import { supabase } from './client'
 

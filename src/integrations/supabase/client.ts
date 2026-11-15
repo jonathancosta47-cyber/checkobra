@@ -1,4 +1,4 @@
-// Supabase integration (originally scaffolded by Lovable; now maintained here).
+// Supabase integration.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
