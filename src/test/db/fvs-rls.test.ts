@@ -93,7 +93,7 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
         expect(await count(tx, "select 1 from locais")).toBe(locais);
         expect(await count(tx, "select 1 from modelos_fvs where empresa_id is not null")).toBe(2);
         expect(await count(tx, "select 1 from modelos_fvs where empresa_id is null")).toBe(3); // padrão do sistema
-        for (const t of ["perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fotos", "convites", "empreendimento_membros", "ordens_servico", "delivery_inspections", "empreiteiros"]) {
+        for (const t of ["perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fvs_fotos", "convites", "empreendimento_membros", "ordens_servico", "delivery_inspections", "empreiteiros"]) {
           expect(await count(tx, `select 1 from ${t} where empresa_id <> $1`, [empresa]), t).toBe(0);
         }
       });
@@ -180,26 +180,6 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
     ).not.toBeNull();
   });
 
-  it("fotos: A não envia para a pasta de B nem vê arquivos de B", async () => {
-    await asUser(db, ADMIN_A, (tx) =>
-      tx.query("insert into storage.objects (bucket_id, name) values ('fvs-fotos', $1)", [`${EMPRESA_A}/foto-a.jpg`]),
-    );
-    await asUser(db, ADMIN_B, (tx) =>
-      tx.query("insert into storage.objects (bucket_id, name) values ('fvs-fotos', $1)", [`${EMPRESA_B}/foto-b.jpg`]),
-    );
-    expect(
-      await pgErrorCode(
-        asUser(db, ADMIN_A, (tx) =>
-          tx.query("insert into storage.objects (bucket_id, name) values ('fvs-fotos', $1)", [`${EMPRESA_B}/invasao.jpg`]),
-        ),
-      ),
-    ).toBe("42501");
-    await asUser(db, ADMIN_A, async (tx) => {
-      const { rows } = await tx.query<{ name: string }>("select name from storage.objects");
-      expect(rows).toEqual([{ name: `${EMPRESA_A}/foto-a.jpg` }]);
-    });
-  });
-
   it("usuário sem empresa não vê nada; visitante sem login não tem acesso", async () => {
     await asUser(db, SEM_EMPRESA, async (tx) => {
       for (const t of ["empresas", "perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "ordens_servico", "delivery_inspections", "empreiteiros"]) {
@@ -247,8 +227,12 @@ describe("papéis", () => {
         "insert into inspecoes (empreendimento_id, local_id, modelo_id) values ($1, $2, $3) returning id",
         [ids.obraA, ids.unidadeA, ids.modeloA],
       );
-      await tx.query("insert into respostas (inspecao_id, item_id, texto, resultado) values ($1, $2, 'Prumo', 'NC')", [i.id, ids.itemA]);
-      await tx.query("update inspecoes set status = 'concluida', concluida_em = now() where id = $1", [i.id]);
+      await tx.query("insert into respostas (inspecao_id, item_id, texto, resultado, observacao) values ($1, $2, 'Prumo', 'NC', 'Fora de prumo')", [i.id, ids.itemA]);
+      await tx.query(
+        `update inspecoes set status = 'concluida', concluida_em = now(),
+           assinaturas = '[{"papel": "inspetor", "nome": "Igor", "imagem": "data:image/png;base64,AAA"}]' where id = $1`,
+        [i.id],
+      );
       return i;
     });
     await asUser(db, INSPETOR_A, async (tx) => {

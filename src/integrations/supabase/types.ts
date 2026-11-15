@@ -293,38 +293,44 @@ export type Database = {
         }
         Relationships: []
       }
-      fotos: {
+      fvs_fotos: {
         Row: {
           created_at: string
+          empreendimento_id: string
           empresa_id: string
           enviada_por: string | null
           id: string
           inspecao_id: string
           legenda: string
           nao_conformidade_id: string | null
-          resposta_id: string | null
+          ordem: number
+          resposta_id: string
           storage_path: string
         }
         Insert: {
           created_at?: string
+          empreendimento_id: string
           empresa_id?: string
           enviada_por?: string | null
           id?: string
           inspecao_id: string
           legenda?: string
           nao_conformidade_id?: string | null
-          resposta_id?: string | null
+          ordem?: number
+          resposta_id: string
           storage_path: string
         }
         Update: {
           created_at?: string
+          empreendimento_id?: string
           empresa_id?: string
           enviada_por?: string | null
           id?: string
           inspecao_id?: string
           legenda?: string
           nao_conformidade_id?: string | null
-          resposta_id?: string | null
+          ordem?: number
+          resposta_id?: string
           storage_path?: string
         }
         Relationships: [
@@ -356,12 +362,18 @@ export type Database = {
             referencedRelation: "respostas"
             referencedColumns: ["empresa_id", "id"]
           },
+          {
+            foreignKeyName: "fvs_fotos_empreendimento_fk"
+            columns: ["empresa_id", "empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["empresa_id", "id"]
+          },
         ]
       }
       inspecoes: {
         Row: {
-          assinado_por: string | null
-          assinatura_path: string | null
+          assinaturas: Json
           concluida_em: string | null
           created_at: string
           empreendimento_id: string
@@ -374,12 +386,13 @@ export type Database = {
           modelo_id: string
           numero: number
           observacoes: string
+          pdf_gerado_em: string | null
+          pdf_path: string | null
           status: Database["public"]["Enums"]["status_inspecao"]
           updated_at: string
         }
         Insert: {
-          assinado_por?: string | null
-          assinatura_path?: string | null
+          assinaturas?: Json
           concluida_em?: string | null
           created_at?: string
           empreendimento_id: string
@@ -392,12 +405,13 @@ export type Database = {
           modelo_id: string
           numero: number
           observacoes?: string
+          pdf_gerado_em?: string | null
+          pdf_path?: string | null
           status?: Database["public"]["Enums"]["status_inspecao"]
           updated_at?: string
         }
         Update: {
-          assinado_por?: string | null
-          assinatura_path?: string | null
+          assinaturas?: Json
           concluida_em?: string | null
           created_at?: string
           empreendimento_id?: string
@@ -410,6 +424,8 @@ export type Database = {
           modelo_id?: string
           numero?: number
           observacoes?: string
+          pdf_gerado_em?: string | null
+          pdf_path?: string | null
           status?: Database["public"]["Enums"]["status_inspecao"]
           updated_at?: string
         }
@@ -880,6 +896,7 @@ export type Database = {
     }
     Functions: {
       aceitar_convite: { Args: { p_nome_usuario?: string }; Returns: string }
+      caminho_da_fvs: { Args: { p_nome: string }; Returns: string }
       criar_empreendimento: {
         Args: {
           p_areas_comuns?: string[]
@@ -910,6 +927,10 @@ export type Database = {
         Returns: boolean
       }
       pode_ver_inspecao: { Args: { p_inspecao: string }; Returns: boolean }
+      registrar_pdf_fvs: {
+        Args: { p_inspecao: string; p_path: string }
+        Returns: undefined
+      }
       salvar_modelo: {
         Args: {
           p_itens: Json
@@ -925,6 +946,7 @@ export type Database = {
         Args: { papeis: Database["public"]["Enums"]["papel_usuario"][] }
         Returns: boolean
       }
+      uuid_ou_nulo: { Args: { p: string }; Returns: string }
     }
     Enums: {
       papel_usuario: "admin_empresa" | "engenheiro" | "inspetor"
