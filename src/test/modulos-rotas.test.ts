@@ -23,8 +23,10 @@ describe("endereços antigos redirecionam para os novos", () => {
     ["/entregas", "/vistorias"],
     ["/entregas/nova", "/vistorias/nova"],
     ["/entregas/xyz", "/vistorias/xyz"],
-    ["/empreiteiros", "/fvs/empreiteiros"],
-    ["/empresa", "/configuracoes"],
+    ["/empreiteiros", "/configuracoes/empreiteiros"],
+    ["/fvs/empreiteiros", "/configuracoes/empreiteiros"],
+    ["/fvs/modelos", "/configuracoes/modelos"],
+    ["/empresa", "/configuracoes/empresa"],
   ])("%s → %s", async (antigo, novo) => {
     expect((await abrir(antigo)).pathname.replace(/\/$/, "")).toBe(novo);
   });
@@ -51,6 +53,12 @@ describe("cada módulo só mostra o próprio conteúdo", () => {
   it.each(casos)("%s não aponta nem carrega outros módulos", (arquivo, proibidos) => {
     const src = ler(arquivo);
     for (const p of proibidos) expect(src, `${arquivo} contém ${p}`).not.toContain(p);
+  });
+
+  it("as telas de FVS só escolhem modelo: nenhuma cria ou edita modelos", () => {
+    for (const f of ["fvs.index.tsx", "fvs.nova.tsx", "fvs.$id.tsx"]) {
+      expect(ler(f), f).not.toMatch(/salvarModelo|duplicarModelo|EditorModelo|\/configuracoes\/modelos|\/fvs\/modelos/);
+    }
   });
 
   it("as listas não têm mais botão flutuante próprio de criar (o + central faz isso)", () => {

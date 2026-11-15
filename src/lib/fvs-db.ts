@@ -7,9 +7,11 @@ export type Papel = Database["public"]["Enums"]["papel_usuario"];
 export type Resultado = Database["public"]["Enums"]["resultado_item"];
 export type StatusInspecao = Database["public"]["Enums"]["status_inspecao"];
 
-export type ModeloItem = Pick<Tabelas["modelo_itens"]["Row"], "id" | "ordem" | "texto" | "criterio">;
-export type Modelo = Pick<Tabelas["modelos_fvs"]["Row"], "id" | "nome" | "descricao" | "versao" | "ativo"> & { itens: ModeloItem[] };
-export type Resposta = Pick<Tabelas["respostas"]["Row"], "id" | "item_id" | "ordem" | "texto" | "criterio" | "resultado" | "observacao">;
+export type ModeloItem = Pick<Tabelas["modelo_itens"]["Row"], "id" | "ordem" | "texto" | "criterio" | "exige_foto">;
+export type Modelo = Pick<Tabelas["modelos_fvs"]["Row"], "id" | "empresa_id" | "nome" | "servico" | "descricao" | "versao" | "ativo" | "atual"> & {
+  itens: ModeloItem[];
+};
+export type Resposta = Pick<Tabelas["respostas"]["Row"], "id" | "item_id" | "ordem" | "texto" | "criterio" | "exige_foto" | "resultado" | "observacao">;
 
 export interface Perfil {
   id: string;
@@ -31,6 +33,9 @@ export interface InspecaoResumo {
   localId: string;
   local: string; // caminho: "Torre A › 1º pavimento › Apto 101"
   modelo: string;
+  modeloVersao: number;
+  modeloServico: string;
+  empreiteiroId: string | null;
   total: number;
   respondidos: number;
   nc: number;
@@ -56,7 +61,7 @@ export const gerencia = (p: Papel) => p === "admin_empresa" || p === "engenheiro
 export const respostasDoModelo = (inspecaoId: string, itens: ModeloItem[]) =>
   [...itens]
     .sort((a, b) => a.ordem - b.ordem)
-    .map((i, k) => ({ inspecao_id: inspecaoId, item_id: i.id, ordem: k + 1, texto: i.texto, criterio: i.criterio }));
+    .map((i, k) => ({ inspecao_id: inspecaoId, item_id: i.id, ordem: k + 1, texto: i.texto, criterio: i.criterio, exige_foto: i.exige_foto }));
 
 export function contarRespostas(rs: Pick<Resposta, "resultado">[]) {
   return {

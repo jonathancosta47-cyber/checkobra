@@ -19,7 +19,7 @@ const locais = [
   loc("u2", "unidade", "Apto 102", "p1", 2),
   loc("u1", "unidade", "Apto 101", "p1", 1),
 ];
-const resp = (p: Partial<Resposta>): Resposta => ({ id: Math.random().toString(), item_id: null, ordem: 0, texto: "x", criterio: "", resultado: null, observacao: "", ...p });
+const resp = (p: Partial<Resposta>): Resposta => ({ id: Math.random().toString(), item_id: null, ordem: 0, texto: "x", criterio: "", exige_foto: false, resultado: null, observacao: "", ...p });
 
 describe("locais", () => {
   it("lista cada nível em ordem e monta o caminho torre › pavimento › unidade", () => {
@@ -34,12 +34,12 @@ describe("locais", () => {
 describe("respostas", () => {
   it("copia os itens do modelo em ordem, com texto e critério", () => {
     const r = respostasDoModelo("insp", [
-      { id: "i2", ordem: 2, texto: "Prumo", criterio: "0,5 cm" },
-      { id: "i1", ordem: 1, texto: "Locação", criterio: "1 cm" },
+      { id: "i2", ordem: 2, texto: "Prumo", criterio: "0,5 cm", exige_foto: true },
+      { id: "i1", ordem: 1, texto: "Locação", criterio: "1 cm", exige_foto: false },
     ]);
     expect(r).toEqual([
-      { inspecao_id: "insp", item_id: "i1", ordem: 1, texto: "Locação", criterio: "1 cm" },
-      { inspecao_id: "insp", item_id: "i2", ordem: 2, texto: "Prumo", criterio: "0,5 cm" },
+      { inspecao_id: "insp", item_id: "i1", ordem: 1, texto: "Locação", criterio: "1 cm", exige_foto: false },
+      { inspecao_id: "insp", item_id: "i2", ordem: 2, texto: "Prumo", criterio: "0,5 cm", exige_foto: true },
     ]);
   });
 

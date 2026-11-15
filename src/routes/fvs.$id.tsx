@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Check, CheckCircle2, Lock, Minus, RotateCcw, X } from "lucide-react";
-import { concluirInspecao, lerInspecao, reabrirInspecao, salvarObservacoes, salvarResposta } from "@/lib/fvs-store";
+import { concluirInspecao, definirEmpreiteiro, lerInspecao, reabrirInspecao, salvarObservacoes, salvarResposta } from "@/lib/fvs-store";
+import { listarEmpreiteiros } from "@/lib/configuracoes-store";
+import { empreiteirosParaServico, type Empreiteiro } from "@/lib/configuracoes";
 import {
   contarRespostas,
   gerencia,
@@ -85,7 +87,9 @@ function Ficha({ id }: { id: string }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-extrabold text-obra-laranja-texto">{numeroFvs(f.numero)}</p>
-            <h2 className="text-xl font-extrabold leading-tight text-obra-grafite">{f.modelo}</h2>
+            <h2 className="text-xl font-extrabold leading-tight text-obra-grafite">
+              {f.modelo} <span className="text-sm font-bold text-obra-suave">v{f.modeloVersao}</span>
+            </h2>
             <p className="text-sm text-obra-suave">{f.obra}</p>
             <p className="text-sm font-semibold text-obra-grafite">{f.local}</p>
           </div>
@@ -106,6 +110,24 @@ function Ficha({ id }: { id: string }) {
             {f.status === "concluida" ? "FVS concluída: só leitura." : "Só quem abriu esta FVS, um engenheiro ou o admin podem editá-la."}
           </p>
         )}
+      </section>
+
+      {/* empreiteiro responsável (cadastro em Configurações › Empreiteiros) */}
+      <section className="obra-card p-4">
+        <EmpreiteiroResponsavel
+          valor={f.empreiteiroId}
+          servico={f.modeloServico}
+          editavel={editavel}
+          onEscolher={async (empreiteiroId) => {
+            const antes = f.empreiteiroId;
+            setF({ ...f, empreiteiroId });
+            const ok = await definirEmpreiteiro(f.id, empreiteiroId).catch(() => false);
+            if (!ok) {
+              setF((cur) => (cur ? { ...cur, empreiteiroId: antes } : cur));
+              setErro("Não foi possível salvar o empreiteiro.");
+            }
+          }}
+        />
       </section>
 
       {erro && <p role="alert" className="obra-alerta-erro">{erro}</p>}
@@ -259,6 +281,51 @@ function ObservacoesGerais({ valor, editavel, onSalvar }: { valor: string; edita
         onChange={(e) => setV(e.target.value)}
         onBlur={() => v !== valor && onSalvar(v)}
       />
+    </label>
+  );
+}
+
+function EmpreiteiroResponsavel({
+  valor,
+  servico,
+  editavel,
+  onEscolher,
+}: {
+  valor: string | null;
+  servico: string;
+  editavel: boolean;
+  onEscolher: (id: string | null) => void;
+}) {
+  const [lista, setLista] = useState<Empreiteiro[] | null>(null);
+  useEffect(() => {
+    listarEmpreiteiros()
+      .then(setLista)
+      .catch(() => setLista([]));
+  }, []);
+  const opcoes = empreiteirosParaServico(lista ?? [], servico);
+  const atual = (lista ?? []).find((e) => e.id === valor);
+  return (
+    <label className="block">
+      <span className="obra-label">Empreiteiro responsável</span>
+      <select
+        className="obra-input"
+        value={valor ?? ""}
+        disabled={!editavel || lista === null}
+        onChange={(e) => onEscolher(e.target.value || null)}
+      >
+        <option value="">{lista === null ? "Carregando…" : "Sem empreiteiro definido"}</option>
+        {/* mantém visível o escolhido mesmo se tiver sido desativado depois */}
+        {atual && !atual.ativo && <option value={atual.id}>{atual.nome} (inativo)</option>}
+        {opcoes.map((e) => (
+          <option key={e.id} value={e.id}>
+            {e.nome}
+            {e.executaServico ? ` — executa ${servico}` : ""}
+          </option>
+        ))}
+      </select>
+      {lista !== null && lista.length === 0 && (
+        <span className="mt-1.5 block text-xs text-obra-suave">Nenhum empreiteiro cadastrado. O admin ou um engenheiro cadastra em Configurações.</span>
+      )}
     </label>
   );
 }

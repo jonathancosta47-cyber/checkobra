@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// Endereço antigo: /empreiteiros → /fvs/empreiteiros.
+// Endereço antigo: /empreiteiros → /configuracoes/empreiteiros.
 export const Route = createFileRoute("/empreiteiros")({
   beforeLoad: () => {
-    throw redirect({ to: "/fvs/empreiteiros", replace: true });
+    throw redirect({ to: "/configuracoes/empreiteiros", replace: true });
   },
 });

@@ -16,12 +16,16 @@ const TITULOS: [prefixo: string, titulo: string][] = [
   ["/vistorias/nova", "Vistoria de entrega"],
   ["/vistorias/", "Vistoria de entrega"],
   ["/vistorias", "Vistorias de entrega"],
-  ["/fvs/modelos", "Modelos de FVS"],
-  ["/fvs/empreiteiros", "Empreiteiros"],
   ["/fvs/nova", "Ficha FVS"],
   ["/fvs/", "Ficha FVS"],
   ["/fvs", "FVS"],
   ["/relatorios", "Relatórios"],
+  ["/configuracoes/modelos/novo", "Novo modelo de FVS"],
+  ["/configuracoes/modelos/", "Modelo de FVS"],
+  ["/configuracoes/modelos", "Modelos de FVS"],
+  ["/configuracoes/empreiteiros", "Empreiteiros"],
+  ["/configuracoes/empresa", "Empresa"],
+  ["/configuracoes/padrao", "Modelos padrão"],
   ["/configuracoes", "Configurações"],
   ["/empreendimentos/novo", "Novo empreendimento"],
 ];
@@ -47,7 +51,10 @@ export function AppShell({ session, children }: { session: FieldSession; childre
     return (
       <PerfilValor perfil={perfil}>
         <EmpreendimentoProvider>
-          <Moldura pathname={pathname} cabecalho={<AppHeader title={titulo} subtitulo={perfil.empresaNome} seletor={<SeletorEmpreendimento />} />}>
+          <Moldura
+            pathname={pathname}
+            cabecalho={<AppHeader title={titulo} subtitulo={perfil.empresaNome} seletor={<SeletorEmpreendimento />} configuracoes={gerencia(perfil.papel)} />}
+          >
             {children}
           </Moldura>
         </EmpreendimentoProvider>
@@ -83,15 +90,20 @@ function Moldura({ pathname, cabecalho, children, semNav }: { pathname: string; 
   );
 }
 
-function AppHeader({ title, subtitulo, seletor }: { title: string; subtitulo: string; seletor?: ReactNode }) {
+function AppHeader({ title, subtitulo, seletor, configuracoes }: { title: string; subtitulo: string; seletor?: ReactNode; configuracoes?: boolean }) {
   const [busy, setBusy] = useState(false);
   return (
     <header className="obra-cabecalho no-print relative z-0">
       <div className="mx-auto max-w-3xl px-3 pb-10 pt-3">
         <div className="flex items-center gap-2">
-          <Link to="/configuracoes" className="obra-icone-btn" aria-label="Configurações da empresa" title="Configurações">
-            <Settings className="h-5 w-5" aria-hidden />
-          </Link>
+          {/* Configurações: só admin e engenheiro */}
+          {configuracoes ? (
+            <Link to="/configuracoes" className="obra-icone-btn" aria-label="Configurações" title="Configurações">
+              <Settings className="h-5 w-5" aria-hidden />
+            </Link>
+          ) : (
+            <span className="w-12 shrink-0" aria-hidden />
+          )}
           <div className="min-w-0 flex-1 text-center">
             <h1 className="truncate text-lg font-extrabold leading-tight">{title}</h1>
             <p className="truncate text-xs font-semibold opacity-80" title={subtitulo}>

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { compressImage, loadCompany, saveCompany, type Company } from "@/lib/orders";
 
-export const Route = createFileRoute("/configuracoes")({
+export const Route = createFileRoute("/configuracoes/empresa")({
   head: () => ({
     meta: [
       { title: "Dados da Empresa — Ordens de Serviço" },

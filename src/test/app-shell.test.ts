@@ -16,8 +16,12 @@ describe("título do cabeçalho", () => {
     expect(tituloDaRota("/fvs")).toBe("FVS");
     expect(tituloDaRota("/fvs/nova")).toBe("Ficha FVS");
     expect(tituloDaRota("/fvs/123")).toBe("Ficha FVS");
-    expect(tituloDaRota("/fvs/modelos")).toBe("Modelos de FVS");
-    expect(tituloDaRota("/fvs/empreiteiros")).toBe("Empreiteiros");
+    expect(tituloDaRota("/configuracoes/modelos")).toBe("Modelos de FVS");
+    expect(tituloDaRota("/configuracoes/modelos/novo")).toBe("Novo modelo de FVS");
+    expect(tituloDaRota("/configuracoes/modelos/abc")).toBe("Modelo de FVS");
+    expect(tituloDaRota("/configuracoes/empreiteiros")).toBe("Empreiteiros");
+    expect(tituloDaRota("/configuracoes/empresa")).toBe("Empresa");
+    expect(tituloDaRota("/configuracoes/padrao")).toBe("Modelos padrão");
     expect(tituloDaRota("/relatorios")).toBe("Relatórios");
     expect(tituloDaRota("/configuracoes")).toBe("Configurações");
   });

@@ -5,6 +5,7 @@ import { criarInspecao, listarModelos } from "@/lib/fvs-store";
 import { listarLocais } from "@/lib/empreendimentos-store";
 import { caminhoDoLocal, nomeDoCaminho, type Empreendimento, type Local } from "@/lib/empreendimentos";
 import type { Modelo } from "@/lib/fvs-db";
+import { ehPadrao, modelosParaFvs } from "@/lib/configuracoes";
 import { Pagina } from "@/components/modulos";
 import { SeletorLocal } from "@/components/SeletorLocal";
 import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
@@ -39,7 +40,8 @@ function NovaFvs({ emp }: { emp: Empreendimento }) {
     Promise.all([listarLocais([emp.id]), listarModelos()])
       .then(([l, m]) => {
         setLocais(l);
-        setModelos(m.filter((x) => x.ativo && x.itens.length));
+        // só modelos ativos, na versão atual (da empresa primeiro, depois os padrão)
+        setModelos(modelosParaFvs(m).filter((x) => x.itens.length));
       })
       .catch(() => setErro("Não foi possível carregar locais e modelos."));
   }, [emp.id]);
@@ -92,7 +94,7 @@ function NovaFvs({ emp }: { emp: Empreendimento }) {
           </div>
           <h2 className="text-lg font-extrabold text-obra-grafite">Qual serviço vai verificar?</h2>
           {modelos.length === 0 ? (
-            <p className="obra-card p-5 text-sm text-obra-suave">Nenhum modelo de FVS ativo na sua empresa.</p>
+            <p className="obra-card p-5 text-sm text-obra-suave">Nenhum modelo de FVS ativo. O admin ou um engenheiro cadastra em Configurações › Modelos de FVS.</p>
           ) : (
             <ul className="space-y-3">
               {modelos.map((m) => (
@@ -108,8 +110,12 @@ function NovaFvs({ emp }: { emp: Empreendimento }) {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-extrabold text-obra-grafite">{m.nome}</span>
-                      <span className="block truncate text-sm text-obra-suave">{m.itens.length} itens a verificar</span>
+                      <span className="block truncate text-sm text-obra-suave">
+                        {m.itens.length} itens · v{m.versao}
+                        {m.servico ? ` · ${m.servico}` : ""}
+                      </span>
                     </span>
+                    {ehPadrao(m) && <span className="shrink-0 rounded-full bg-obra-bege px-2 py-0.5 text-xs font-extrabold text-obra-grafite">Padrão</span>}
                     <ChevronRight className="h-5 w-5 shrink-0 text-obra-suave" aria-hidden />
                   </button>
                 </li>

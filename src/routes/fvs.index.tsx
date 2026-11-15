@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ListChecks } from "lucide-react";
 import { listarInspecoes } from "@/lib/fvs-store";
 import { numeroFvs, type InspecaoResumo } from "@/lib/fvs-db";
 import type { Empreendimento } from "@/lib/empreendimentos";
@@ -58,11 +57,6 @@ function ListaFvs({ emp }: { emp: Empreendimento }) {
     <>
       <BuscaCard label="Buscar FVS" placeholder="Nº, modelo, obra ou local" value={q} onChange={setQ} />
 
-      <div className="mt-4 flex justify-end">
-        <Link to="/fvs/modelos" className="btn-ghost shrink-0">
-          <ListChecks className="h-4 w-4" aria-hidden /> Modelos
-        </Link>
-      </div>
 
       <div className="mt-4 space-y-3">
         <Pilulas label="Filtrar por não conformidade" opcoes={FILTRO_NC} valor={nc} onChange={setNc} />

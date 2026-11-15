@@ -117,7 +117,7 @@ describe("criar, editar (nova versão), duplicar e desativar", () => {
     ]);
     // a FVS continua na versão 1, com os itens da versão 1
     expect(await one(db, "select modelo_id from inspecoes where id = $1", [fvs])).toEqual({ modelo_id: v1 });
-    expect((await db.query("select texto from respostas where inspecao_id = $1 order by ordem", [fvs])).rows.map((r: { texto: string }) => r.texto)).toEqual(["Prumo", "Acabamento"]);
+    expect((await db.query<{ texto: string }>("select texto from respostas where inspecao_id = $1 order by ordem", [fvs])).rows.map((r) => r.texto)).toEqual(["Prumo", "Acabamento"]);
     expect(await count(db, "select 1 from modelo_itens where modelo_id = $1", [v1])).toBe(2);
     // não dá para editar uma versão antiga, nem criar FVS nova com ela
     expect(await pgErrorCode(asUser(db, ADMIN_A, (tx) => tx.query("select public.salvar_modelo($1, 'X', '', $2::jsonb)", [v1, itens("a")])))).toBe("23514");

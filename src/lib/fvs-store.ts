@@ -50,7 +50,8 @@ export async function aceitarConvite(nomeUsuario: string) {
 export async function listarModelos(): Promise<Modelo[]> {
   const { data, error } = await supabase
     .from("modelos_fvs")
-    .select("id, nome, descricao, versao, ativo, modelo_itens(id, ordem, texto, criterio)")
+    .select("id, empresa_id, nome, servico, descricao, versao, ativo, atual, modelo_itens(id, ordem, texto, criterio, exige_foto)")
+    .eq("atual", true)
     .order("nome");
   falhou(error);
   return (data ?? []).map(({ modelo_itens, ...m }) => ({ ...m, itens: [...modelo_itens].sort((a, b) => a.ordem - b.ordem) }));
@@ -59,12 +60,12 @@ export async function listarModelos(): Promise<Modelo[]> {
 // ───────────── inspeções ─────────────
 
 const SELECT_INSPECAO =
-  "id, numero, status, created_at, concluida_em, inspetor_id, empreendimento_id, local_id, observacoes, empreendimentos(nome), modelos_fvs(nome), respostas(id, item_id, ordem, texto, criterio, resultado, observacao)";
+  "id, numero, status, created_at, concluida_em, inspetor_id, empreendimento_id, local_id, empreiteiro_id, observacoes, empreendimentos(nome), modelos_fvs(nome, versao, servico), respostas(id, item_id, ordem, texto, criterio, exige_foto, resultado, observacao)";
 
 type LinhaInspecao = {
   id: string; numero: number; status: InspecaoResumo["status"]; created_at: string; concluida_em: string | null;
-  inspetor_id: string; empreendimento_id: string; local_id: string; observacoes: string;
-  empreendimentos: { nome: string } | null; modelos_fvs: { nome: string } | null; respostas: Resposta[];
+  inspetor_id: string; empreendimento_id: string; local_id: string; empreiteiro_id: string | null; observacoes: string;
+  empreendimentos: { nome: string } | null; modelos_fvs: { nome: string; versao: number; servico: string } | null; respostas: Resposta[];
 };
 
 function montar(l: LinhaInspecao, locais: Local[]): Inspecao {
@@ -81,6 +82,9 @@ function montar(l: LinhaInspecao, locais: Local[]): Inspecao {
     localId: l.local_id,
     local: nomeDoCaminho(caminhoDoLocal(locais, l.local_id)),
     modelo: l.modelos_fvs?.nome ?? "",
+    modeloVersao: l.modelos_fvs?.versao ?? 1,
+    modeloServico: l.modelos_fvs?.servico ?? "",
+    empreiteiroId: l.empreiteiro_id,
     observacoes: l.observacoes,
     respostas,
     ...contarRespostas(respostas),
@@ -140,6 +144,12 @@ export async function salvarResposta(id: string, campos: { resultado?: Resultado
 
 export async function salvarObservacoes(id: string, observacoes: string) {
   const { data, error } = await supabase.from("inspecoes").update({ observacoes }).eq("id", id).select("id");
+  falhou(error);
+  return (data ?? []).length > 0;
+}
+
+export async function definirEmpreiteiro(id: string, empreiteiroId: string | null) {
+  const { data, error } = await supabase.from("inspecoes").update({ empreiteiro_id: empreiteiroId }).eq("id", id).select("id");
   falhou(error);
   return (data ?? []).length > 0;
 }

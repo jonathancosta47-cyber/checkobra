@@ -10,13 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as EmpreiteirosRouteImport } from './routes/empreiteiros'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NovaRouteImport } from './routes/nova'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as ConfiguracoesIndexRouteImport } from './routes/configuracoes.index'
+import { Route as ConfiguracoesEmpreiteirosRouteImport } from './routes/configuracoes.empreiteiros'
+import { Route as ConfiguracoesEmpresaRouteImport } from './routes/configuracoes.empresa'
+import { Route as ConfiguracoesPadraoRouteImport } from './routes/configuracoes.padrao'
 import { Route as EmpreendimentosNovoRouteImport } from './routes/empreendimentos.novo'
 import { Route as EntregasIndexRouteImport } from './routes/entregas.index'
 import { Route as EntregasIdRouteImport } from './routes/entregas.$id'
@@ -34,17 +37,15 @@ import { Route as OsNovaRouteImport } from './routes/os.nova'
 import { Route as VistoriasIndexRouteImport } from './routes/vistorias.index'
 import { Route as VistoriasIdRouteImport } from './routes/vistorias.$id'
 import { Route as VistoriasNovaRouteImport } from './routes/vistorias.nova'
+import { Route as ConfiguracoesModelosIndexRouteImport } from './routes/configuracoes.modelos.index'
+import { Route as ConfiguracoesModelosIdRouteImport } from './routes/configuracoes.modelos.$id'
+import { Route as ConfiguracoesModelosNovoRouteImport } from './routes/configuracoes.modelos.novo'
 import { Route as EmpreendimentosIdIndexRouteImport } from './routes/empreendimentos.$id.index'
 import { Route as EmpreendimentosIdEstruturaRouteImport } from './routes/empreendimentos.$id.estrutura'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpreiteirosRoute = EmpreiteirosRouteImport.update({
@@ -75,6 +76,27 @@ const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesIndexRoute = ConfiguracoesIndexRouteImport.update({
+  id: '/configuracoes/',
+  path: '/configuracoes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesEmpreiteirosRoute =
+  ConfiguracoesEmpreiteirosRouteImport.update({
+    id: '/configuracoes/empreiteiros',
+    path: '/configuracoes/empreiteiros',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ConfiguracoesEmpresaRoute = ConfiguracoesEmpresaRouteImport.update({
+  id: '/configuracoes/empresa',
+  path: '/configuracoes/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesPadraoRoute = ConfiguracoesPadraoRouteImport.update({
+  id: '/configuracoes/padrao',
+  path: '/configuracoes/padrao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpreendimentosNovoRoute = EmpreendimentosNovoRouteImport.update({
@@ -162,6 +184,23 @@ const VistoriasNovaRoute = VistoriasNovaRouteImport.update({
   path: '/vistorias/nova',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfiguracoesModelosIndexRoute =
+  ConfiguracoesModelosIndexRouteImport.update({
+    id: '/configuracoes/modelos/',
+    path: '/configuracoes/modelos/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ConfiguracoesModelosIdRoute = ConfiguracoesModelosIdRouteImport.update({
+  id: '/configuracoes/modelos/$id',
+  path: '/configuracoes/modelos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesModelosNovoRoute =
+  ConfiguracoesModelosNovoRouteImport.update({
+    id: '/configuracoes/modelos/novo',
+    path: '/configuracoes/modelos/novo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EmpreendimentosIdIndexRoute = EmpreendimentosIdIndexRouteImport.update({
   id: '/empreendimentos/$id/',
   path: '/empreendimentos/$id/',
@@ -176,13 +215,15 @@ const EmpreendimentosIdEstruturaRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/relatorios': typeof RelatoriosRoute
+  '/configuracoes/empreiteiros': typeof ConfiguracoesEmpreiteirosRoute
+  '/configuracoes/empresa': typeof ConfiguracoesEmpresaRoute
+  '/configuracoes/padrao': typeof ConfiguracoesPadraoRoute
   '/empreendimentos/novo': typeof EmpreendimentosNovoRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -196,22 +237,28 @@ export interface FileRoutesByFullPath {
   '/os/nova': typeof OsNovaRoute
   '/vistorias/$id': typeof VistoriasIdRoute
   '/vistorias/nova': typeof VistoriasNovaRoute
+  '/configuracoes/': typeof ConfiguracoesIndexRoute
   '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
   '/os/': typeof OsIndexRoute
   '/vistorias/': typeof VistoriasIndexRoute
+  '/configuracoes/modelos/$id': typeof ConfiguracoesModelosIdRoute
+  '/configuracoes/modelos/novo': typeof ConfiguracoesModelosNovoRoute
   '/empreendimentos/$id/estrutura': typeof EmpreendimentosIdEstruturaRoute
+  '/configuracoes/modelos/': typeof ConfiguracoesModelosIndexRoute
   '/empreendimentos/$id/': typeof EmpreendimentosIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/relatorios': typeof RelatoriosRoute
+  '/configuracoes/empreiteiros': typeof ConfiguracoesEmpreiteirosRoute
+  '/configuracoes/empresa': typeof ConfiguracoesEmpresaRoute
+  '/configuracoes/padrao': typeof ConfiguracoesPadraoRoute
   '/empreendimentos/novo': typeof EmpreendimentosNovoRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -225,23 +272,29 @@ export interface FileRoutesByTo {
   '/os/nova': typeof OsNovaRoute
   '/vistorias/$id': typeof VistoriasIdRoute
   '/vistorias/nova': typeof VistoriasNovaRoute
+  '/configuracoes': typeof ConfiguracoesIndexRoute
   '/entregas': typeof EntregasIndexRoute
   '/fvs': typeof FvsIndexRoute
   '/os': typeof OsIndexRoute
   '/vistorias': typeof VistoriasIndexRoute
+  '/configuracoes/modelos/$id': typeof ConfiguracoesModelosIdRoute
+  '/configuracoes/modelos/novo': typeof ConfiguracoesModelosNovoRoute
   '/empreendimentos/$id/estrutura': typeof EmpreendimentosIdEstruturaRoute
+  '/configuracoes/modelos': typeof ConfiguracoesModelosIndexRoute
   '/empreendimentos/$id': typeof EmpreendimentosIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/configuracoes': typeof ConfiguracoesRoute
   '/empreiteiros': typeof EmpreiteirosRoute
   '/empresa': typeof EmpresaRoute
   '/login': typeof LoginRoute
   '/nova': typeof NovaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/relatorios': typeof RelatoriosRoute
+  '/configuracoes/empreiteiros': typeof ConfiguracoesEmpreiteirosRoute
+  '/configuracoes/empresa': typeof ConfiguracoesEmpresaRoute
+  '/configuracoes/padrao': typeof ConfiguracoesPadraoRoute
   '/empreendimentos/novo': typeof EmpreendimentosNovoRoute
   '/entregas/$id': typeof EntregasIdRoute
   '/entregas/nova': typeof EntregasNovaRoute
@@ -255,24 +308,30 @@ export interface FileRoutesById {
   '/os/nova': typeof OsNovaRoute
   '/vistorias/$id': typeof VistoriasIdRoute
   '/vistorias/nova': typeof VistoriasNovaRoute
+  '/configuracoes/': typeof ConfiguracoesIndexRoute
   '/entregas/': typeof EntregasIndexRoute
   '/fvs/': typeof FvsIndexRoute
   '/os/': typeof OsIndexRoute
   '/vistorias/': typeof VistoriasIndexRoute
+  '/configuracoes/modelos/$id': typeof ConfiguracoesModelosIdRoute
+  '/configuracoes/modelos/novo': typeof ConfiguracoesModelosNovoRoute
   '/empreendimentos/$id/estrutura': typeof EmpreendimentosIdEstruturaRoute
+  '/configuracoes/modelos/': typeof ConfiguracoesModelosIndexRoute
   '/empreendimentos/$id/': typeof EmpreendimentosIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
     | '/redefinir-senha'
     | '/relatorios'
+    | '/configuracoes/empreiteiros'
+    | '/configuracoes/empresa'
+    | '/configuracoes/padrao'
     | '/empreendimentos/novo'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -286,22 +345,28 @@ export interface FileRouteTypes {
     | '/os/nova'
     | '/vistorias/$id'
     | '/vistorias/nova'
+    | '/configuracoes/'
     | '/entregas/'
     | '/fvs/'
     | '/os/'
     | '/vistorias/'
+    | '/configuracoes/modelos/$id'
+    | '/configuracoes/modelos/novo'
     | '/empreendimentos/$id/estrutura'
+    | '/configuracoes/modelos/'
     | '/empreendimentos/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
     | '/redefinir-senha'
     | '/relatorios'
+    | '/configuracoes/empreiteiros'
+    | '/configuracoes/empresa'
+    | '/configuracoes/padrao'
     | '/empreendimentos/novo'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -315,22 +380,28 @@ export interface FileRouteTypes {
     | '/os/nova'
     | '/vistorias/$id'
     | '/vistorias/nova'
+    | '/configuracoes'
     | '/entregas'
     | '/fvs'
     | '/os'
     | '/vistorias'
+    | '/configuracoes/modelos/$id'
+    | '/configuracoes/modelos/novo'
     | '/empreendimentos/$id/estrutura'
+    | '/configuracoes/modelos'
     | '/empreendimentos/$id'
   id:
     | '__root__'
     | '/'
-    | '/configuracoes'
     | '/empreiteiros'
     | '/empresa'
     | '/login'
     | '/nova'
     | '/redefinir-senha'
     | '/relatorios'
+    | '/configuracoes/empreiteiros'
+    | '/configuracoes/empresa'
+    | '/configuracoes/padrao'
     | '/empreendimentos/novo'
     | '/entregas/$id'
     | '/entregas/nova'
@@ -344,23 +415,29 @@ export interface FileRouteTypes {
     | '/os/nova'
     | '/vistorias/$id'
     | '/vistorias/nova'
+    | '/configuracoes/'
     | '/entregas/'
     | '/fvs/'
     | '/os/'
     | '/vistorias/'
+    | '/configuracoes/modelos/$id'
+    | '/configuracoes/modelos/novo'
     | '/empreendimentos/$id/estrutura'
+    | '/configuracoes/modelos/'
     | '/empreendimentos/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ConfiguracoesRoute: typeof ConfiguracoesRoute
   EmpreiteirosRoute: typeof EmpreiteirosRoute
   EmpresaRoute: typeof EmpresaRoute
   LoginRoute: typeof LoginRoute
   NovaRoute: typeof NovaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  ConfiguracoesEmpreiteirosRoute: typeof ConfiguracoesEmpreiteirosRoute
+  ConfiguracoesEmpresaRoute: typeof ConfiguracoesEmpresaRoute
+  ConfiguracoesPadraoRoute: typeof ConfiguracoesPadraoRoute
   EmpreendimentosNovoRoute: typeof EmpreendimentosNovoRoute
   EntregasIdRoute: typeof EntregasIdRoute
   EntregasNovaRoute: typeof EntregasNovaRoute
@@ -374,11 +451,15 @@ export interface RootRouteChildren {
   OsNovaRoute: typeof OsNovaRoute
   VistoriasIdRoute: typeof VistoriasIdRoute
   VistoriasNovaRoute: typeof VistoriasNovaRoute
+  ConfiguracoesIndexRoute: typeof ConfiguracoesIndexRoute
   EntregasIndexRoute: typeof EntregasIndexRoute
   FvsIndexRoute: typeof FvsIndexRoute
   OsIndexRoute: typeof OsIndexRoute
   VistoriasIndexRoute: typeof VistoriasIndexRoute
+  ConfiguracoesModelosIdRoute: typeof ConfiguracoesModelosIdRoute
+  ConfiguracoesModelosNovoRoute: typeof ConfiguracoesModelosNovoRoute
   EmpreendimentosIdEstruturaRoute: typeof EmpreendimentosIdEstruturaRoute
+  ConfiguracoesModelosIndexRoute: typeof ConfiguracoesModelosIndexRoute
   EmpreendimentosIdIndexRoute: typeof EmpreendimentosIdIndexRoute
 }
 
@@ -389,13 +470,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracoes': {
-      id: '/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empreiteiros': {
@@ -438,6 +512,34 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/': {
+      id: '/configuracoes/'
+      path: '/configuracoes'
+      fullPath: '/configuracoes/'
+      preLoaderRoute: typeof ConfiguracoesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/empreiteiros': {
+      id: '/configuracoes/empreiteiros'
+      path: '/configuracoes/empreiteiros'
+      fullPath: '/configuracoes/empreiteiros'
+      preLoaderRoute: typeof ConfiguracoesEmpreiteirosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/empresa': {
+      id: '/configuracoes/empresa'
+      path: '/configuracoes/empresa'
+      fullPath: '/configuracoes/empresa'
+      preLoaderRoute: typeof ConfiguracoesEmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/padrao': {
+      id: '/configuracoes/padrao'
+      path: '/configuracoes/padrao'
+      fullPath: '/configuracoes/padrao'
+      preLoaderRoute: typeof ConfiguracoesPadraoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empreendimentos/novo': {
@@ -559,6 +661,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VistoriasNovaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuracoes/modelos/': {
+      id: '/configuracoes/modelos/'
+      path: '/configuracoes/modelos'
+      fullPath: '/configuracoes/modelos/'
+      preLoaderRoute: typeof ConfiguracoesModelosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/modelos/$id': {
+      id: '/configuracoes/modelos/$id'
+      path: '/configuracoes/modelos/$id'
+      fullPath: '/configuracoes/modelos/$id'
+      preLoaderRoute: typeof ConfiguracoesModelosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes/modelos/novo': {
+      id: '/configuracoes/modelos/novo'
+      path: '/configuracoes/modelos/novo'
+      fullPath: '/configuracoes/modelos/novo'
+      preLoaderRoute: typeof ConfiguracoesModelosNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/empreendimentos/$id/': {
       id: '/empreendimentos/$id/'
       path: '/empreendimentos/$id'
@@ -578,13 +701,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ConfiguracoesRoute: ConfiguracoesRoute,
   EmpreiteirosRoute: EmpreiteirosRoute,
   EmpresaRoute: EmpresaRoute,
   LoginRoute: LoginRoute,
   NovaRoute: NovaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   RelatoriosRoute: RelatoriosRoute,
+  ConfiguracoesEmpreiteirosRoute: ConfiguracoesEmpreiteirosRoute,
+  ConfiguracoesEmpresaRoute: ConfiguracoesEmpresaRoute,
+  ConfiguracoesPadraoRoute: ConfiguracoesPadraoRoute,
   EmpreendimentosNovoRoute: EmpreendimentosNovoRoute,
   EntregasIdRoute: EntregasIdRoute,
   EntregasNovaRoute: EntregasNovaRoute,
@@ -598,11 +723,15 @@ const rootRouteChildren: RootRouteChildren = {
   OsNovaRoute: OsNovaRoute,
   VistoriasIdRoute: VistoriasIdRoute,
   VistoriasNovaRoute: VistoriasNovaRoute,
+  ConfiguracoesIndexRoute: ConfiguracoesIndexRoute,
   EntregasIndexRoute: EntregasIndexRoute,
   FvsIndexRoute: FvsIndexRoute,
   OsIndexRoute: OsIndexRoute,
   VistoriasIndexRoute: VistoriasIndexRoute,
+  ConfiguracoesModelosIdRoute: ConfiguracoesModelosIdRoute,
+  ConfiguracoesModelosNovoRoute: ConfiguracoesModelosNovoRoute,
   EmpreendimentosIdEstruturaRoute: EmpreendimentosIdEstruturaRoute,
+  ConfiguracoesModelosIndexRoute: ConfiguracoesModelosIndexRoute,
   EmpreendimentosIdIndexRoute: EmpreendimentosIdIndexRoute,
 }
 export const routeTree = rootRouteImport
