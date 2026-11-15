@@ -219,6 +219,56 @@ export type Database = {
           },
         ]
       }
+      empreiteiros: {
+        Row: {
+          ativo: boolean
+          cnpj: string | null
+          contato_nome: string
+          created_at: string
+          email: string
+          empresa_id: string
+          id: string
+          nome: string
+          servicos: string[]
+          telefone: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cnpj?: string | null
+          contato_nome?: string
+          created_at?: string
+          email?: string
+          empresa_id?: string
+          id?: string
+          nome: string
+          servicos?: string[]
+          telefone?: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cnpj?: string | null
+          contato_nome?: string
+          created_at?: string
+          email?: string
+          empresa_id?: string
+          id?: string
+          nome?: string
+          servicos?: string[]
+          telefone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreiteiros_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           cnpj: string | null
@@ -315,6 +365,7 @@ export type Database = {
           concluida_em: string | null
           created_at: string
           empreendimento_id: string
+          empreiteiro_id: string | null
           empresa_id: string
           id: string
           iniciada_em: string
@@ -332,6 +383,7 @@ export type Database = {
           concluida_em?: string | null
           created_at?: string
           empreendimento_id: string
+          empreiteiro_id?: string | null
           empresa_id?: string
           id?: string
           iniciada_em?: string
@@ -349,6 +401,7 @@ export type Database = {
           concluida_em?: string | null
           created_at?: string
           empreendimento_id?: string
+          empreiteiro_id?: string | null
           empresa_id?: string
           id?: string
           iniciada_em?: string
@@ -361,6 +414,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspecoes_empreiteiro_fk"
+            columns: ["empresa_id", "empreiteiro_id"]
+            isOneToOne: false
+            referencedRelation: "empreiteiros"
+            referencedColumns: ["empresa_id", "id"]
+          },
           {
             foreignKeyName: "inspecoes_empresa_id_fkey"
             columns: ["empresa_id"]
@@ -376,13 +436,6 @@ export type Database = {
             referencedColumns: ["empresa_id", "id"]
           },
           {
-            foreignKeyName: "inspecoes_empresa_id_modelo_id_fkey"
-            columns: ["empresa_id", "modelo_id"]
-            isOneToOne: false
-            referencedRelation: "modelos_fvs"
-            referencedColumns: ["empresa_id", "id"]
-          },
-          {
             foreignKeyName: "inspecoes_empresa_id_obra_id_fkey"
             columns: ["empresa_id", "empreendimento_id"]
             isOneToOne: false
@@ -395,6 +448,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "locais"
             referencedColumns: ["empresa_id", "empreendimento_id", "id"]
+          },
+          {
+            foreignKeyName: "inspecoes_modelo_fk"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos_fvs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -460,7 +520,8 @@ export type Database = {
         Row: {
           created_at: string
           criterio: string
-          empresa_id: string
+          empresa_id: string | null
+          exige_foto: boolean
           id: string
           modelo_id: string
           ordem: number
@@ -470,7 +531,8 @@ export type Database = {
         Insert: {
           created_at?: string
           criterio?: string
-          empresa_id?: string
+          empresa_id?: string | null
+          exige_foto?: boolean
           id?: string
           modelo_id: string
           ordem?: number
@@ -480,7 +542,8 @@ export type Database = {
         Update: {
           created_at?: string
           criterio?: string
-          empresa_id?: string
+          empresa_id?: string | null
+          exige_foto?: boolean
           id?: string
           modelo_id?: string
           ordem?: number
@@ -496,42 +559,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "modelo_itens_empresa_id_modelo_id_fkey"
-            columns: ["empresa_id", "modelo_id"]
+            foreignKeyName: "modelo_itens_modelo_fk"
+            columns: ["modelo_id"]
             isOneToOne: false
             referencedRelation: "modelos_fvs"
-            referencedColumns: ["empresa_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
       }
       modelos_fvs: {
         Row: {
           ativo: boolean
+          atual: boolean
           created_at: string
+          criado_por: string | null
           descricao: string
-          empresa_id: string
+          empresa_id: string | null
+          grupo_id: string
           id: string
           nome: string
+          servico: string
           updated_at: string
           versao: number
         }
         Insert: {
           ativo?: boolean
+          atual?: boolean
           created_at?: string
+          criado_por?: string | null
           descricao?: string
-          empresa_id?: string
+          empresa_id?: string | null
+          grupo_id: string
           id?: string
           nome: string
+          servico?: string
           updated_at?: string
           versao?: number
         }
         Update: {
           ativo?: boolean
+          atual?: boolean
           created_at?: string
+          criado_por?: string | null
           descricao?: string
-          empresa_id?: string
+          empresa_id?: string | null
+          grupo_id?: string
           id?: string
           nome?: string
+          servico?: string
           updated_at?: string
           versao?: number
         }
@@ -722,6 +797,7 @@ export type Database = {
           created_at: string
           criterio: string
           empresa_id: string
+          exige_foto: boolean
           id: string
           inspecao_id: string
           item_id: string | null
@@ -735,6 +811,7 @@ export type Database = {
           created_at?: string
           criterio?: string
           empresa_id?: string
+          exige_foto?: boolean
           id?: string
           inspecao_id: string
           item_id?: string | null
@@ -748,6 +825,7 @@ export type Database = {
           created_at?: string
           criterio?: string
           empresa_id?: string
+          exige_foto?: boolean
           id?: string
           inspecao_id?: string
           item_id?: string | null
@@ -773,13 +851,28 @@ export type Database = {
             referencedColumns: ["empresa_id", "id"]
           },
           {
-            foreignKeyName: "respostas_empresa_id_item_id_fkey"
-            columns: ["empresa_id", "item_id"]
+            foreignKeyName: "respostas_item_fk"
+            columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "modelo_itens"
-            referencedColumns: ["empresa_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
+      }
+      super_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -802,6 +895,10 @@ export type Database = {
         Args: { p_nome: string; p_nome_usuario?: string }
         Returns: string
       }
+      duplicar_modelo: {
+        Args: { p_modelo_id: string; p_nome?: string }
+        Returns: string
+      }
       meu_papel: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_usuario"]
@@ -813,6 +910,17 @@ export type Database = {
         Returns: boolean
       }
       pode_ver_inspecao: { Args: { p_inspecao: string }; Returns: boolean }
+      salvar_modelo: {
+        Args: {
+          p_itens: Json
+          p_modelo_id: string
+          p_nome: string
+          p_padrao?: boolean
+          p_servico: string
+        }
+        Returns: string
+      }
+      sou_super_admin: { Args: never; Returns: boolean }
       tem_papel: {
         Args: { papeis: Database["public"]["Enums"]["papel_usuario"][] }
         Returns: boolean

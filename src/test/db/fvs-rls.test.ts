@@ -62,7 +62,7 @@ describe("estrutura", () => {
     const { rows } = await db.query<{ table_name: string }>(`
       select t.table_name from information_schema.tables t
       where t.table_schema = 'public' and t.table_type = 'BASE TABLE'
-        and t.table_name not in ('empresas', 'delivery_inspections')
+        and t.table_name not in ('empresas', 'delivery_inspections', 'super_admins')
         and not exists (select 1 from information_schema.columns c
                         where c.table_schema = 'public' and c.table_name = t.table_name and c.column_name = 'empresa_id')`);
     expect(rows).toEqual([]);
@@ -91,8 +91,9 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
       await asUser(db, user, async (tx) => {
         expect((await tx.query<{ id: string }>("select id from empresas")).rows).toEqual([{ id: empresa }]);
         expect(await count(tx, "select 1 from locais")).toBe(locais);
-        expect(await count(tx, "select 1 from modelos_fvs")).toBe(2);
-        for (const t of ["perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fotos", "convites", "empreendimento_membros", "ordens_servico", "delivery_inspections"]) {
+        expect(await count(tx, "select 1 from modelos_fvs where empresa_id is not null")).toBe(2);
+        expect(await count(tx, "select 1 from modelos_fvs where empresa_id is null")).toBe(3); // padrão do sistema
+        for (const t of ["perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "respostas", "nao_conformidades", "fotos", "convites", "empreendimento_membros", "ordens_servico", "delivery_inspections", "empreiteiros"]) {
           expect(await count(tx, `select 1 from ${t} where empresa_id <> $1`, [empresa]), t).toBe(0);
         }
       });
@@ -118,7 +119,7 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
   it("A não altera nem apaga dados de B (0 linhas afetadas)", async () => {
     await asUser(db, ADMIN_A, async (tx) => {
       expect((await tx.query("update empreendimentos set nome = 'Hackeada' where id = $1", [ids.obraB])).affectedRows).toBe(0);
-      expect((await tx.query("delete from modelos_fvs where id = $1", [ids.modeloB])).affectedRows).toBe(0);
+      expect((await tx.query("update modelos_fvs set ativo = false where id = $1", [ids.modeloB])).affectedRows).toBe(0);
       expect((await tx.query("update empresas set nome = 'Hackeada' where id = $1", [EMPRESA_B])).affectedRows).toBe(0);
     });
     const obra = await one<{ nome: string }>(db, "select nome from empreendimentos where id = $1", [ids.obraB]);
@@ -201,7 +202,7 @@ describe("isolamento: a empresa A não vê dados da empresa B", () => {
 
   it("usuário sem empresa não vê nada; visitante sem login não tem acesso", async () => {
     await asUser(db, SEM_EMPRESA, async (tx) => {
-      for (const t of ["empresas", "perfis", "empreendimentos", "locais", "modelos_fvs", "inspecoes", "ordens_servico", "delivery_inspections"]) {
+      for (const t of ["empresas", "perfis", "empreendimentos", "locais", "modelos_fvs", "modelo_itens", "inspecoes", "ordens_servico", "delivery_inspections", "empreiteiros"]) {
         expect(await count(tx, `select 1 from ${t}`), t).toBe(0);
       }
     });

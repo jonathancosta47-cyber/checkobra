@@ -82,6 +82,17 @@ begin
   end loop;
 end $$;
 
+-- Empreiteiros de exemplo (2 por empresa)
+insert into public.empreiteiros (empresa_id, nome, cnpj, contato_nome, telefone, servicos)
+select v.empresa_id::uuid, v.nome, v.cnpj, v.contato, v.telefone, v.servicos
+from (values
+  ('a0000000-0000-4000-8000-000000000001', 'Alvenarias Silva (exemplo)', '11111111000111', 'Carlos Silva', '(11) 90000-0001', array['Alvenaria']),
+  ('a0000000-0000-4000-8000-000000000001', 'Pisos & Cia (exemplo)', '22222222000122', 'Marta Souza', '(11) 90000-0002', array['Contrapiso', 'Revestimento']),
+  ('b0000000-0000-4000-8000-000000000002', 'Construções Minas (exemplo)', '33333333000133', 'João Lima', '(31) 90000-0003', array['Alvenaria', 'Contrapiso']),
+  ('b0000000-0000-4000-8000-000000000002', 'Revest BH (exemplo)', '44444444000144', 'Ana Prado', '(31) 90000-0004', array['Revestimento'])
+) as v(empresa_id, nome, cnpj, contato, telefone, servicos)
+where not exists (select 1 from public.empreiteiros e where e.empresa_id = v.empresa_id::uuid and e.cnpj = v.cnpj);
+
 -- Para testar no app: crie seu usuário (Authentication > Users > Add user, "Auto Confirm User")
 -- e rode no SQL Editor do Supabase, trocando o e-mail e o papel se quiser:
 --
