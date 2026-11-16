@@ -18,9 +18,9 @@ export function LinkRegistro({ modulo, id, className, children }: { modulo: Modu
 }
 
 // Campo de busca em cartão branco, sobreposto ao cabeçalho laranja.
-export function BuscaCard({ value, onChange, placeholder, label }: { value: string; onChange: (v: string) => void; placeholder: string; label: string }) {
+export function BuscaCard({ value, onChange, placeholder, label, sobreposto = true }: { value: string; onChange: (v: string) => void; placeholder: string; label: string; sobreposto?: boolean }) {
   return (
-    <label className="obra-card relative z-10 -mt-7 flex items-center gap-2 px-4">
+    <label className={`obra-card relative z-10 flex items-center gap-2 px-4 ${sobreposto ? "-mt-7" : ""}`}>
       <Search className="h-5 w-5 shrink-0 text-obra-suave" aria-hidden />
       <input
         type="search"

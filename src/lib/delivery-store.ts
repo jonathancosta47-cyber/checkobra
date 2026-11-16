@@ -52,3 +52,16 @@ export async function removeDelivery(id: string) {
   const { error } = await supabase.from("delivery_inspections").delete().eq("id", id);
   if (error) throw error;
 }
+
+// Vistorias de um empreendimento com a unidade (local) de cada uma — usado no painel visual.
+export async function listarVistoriasComLocal(
+  empreendimentoId: string,
+): Promise<{ delivery: Delivery; localId: string | null }[]> {
+  const { data, error } = await supabase
+    .from("delivery_inspections")
+    .select("data, local_id")
+    .eq("empreendimento_id", empreendimentoId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ delivery: row.data as unknown as Delivery, localId: row.local_id }));
+}

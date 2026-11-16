@@ -232,6 +232,7 @@
   --obra-borda-campo: oklch(0.6391 0.0243 73.96);    /* #958A7C borda de campos (3,4:1 no branco) */
   --obra-info: oklch(0.3791 0.1378 265.52);          /* #1E3A8A "em andamento" (texto) */
   --obra-info-fundo: oklch(0.9296 0.0317 272.79);    /* #E0E7FF "em andamento" (fundo) */
+  --obra-neutro: oklch(0.7616 0.0186 73.02);         /* #B9B0A5 "sem vistoria" (borda tracejada) */
   --obra-raio: 18px;                                 /* cantos dos cards */
   --obra-raio-cabecalho: 28px;                       /* cantos inferiores do cabeçalho */
   --obra-sombra: 0 8px 24px -10px oklch(0.2350 0 0 / 0.22);
@@ -256,6 +257,7 @@
   --color-obra-borda-campo: var(--obra-borda-campo);
   --color-obra-info: var(--obra-info);
   --color-obra-info-fundo: var(--obra-info-fundo);
+  --color-obra-neutro: var(--obra-neutro);
   --radius-obra: var(--obra-raio);
   --shadow-obra: var(--obra-sombra);
 }

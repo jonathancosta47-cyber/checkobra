@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
 import type { Empreendimento } from "@/lib/empreendimentos";
-import { listDeliveries } from "@/lib/delivery-store";
+import { listarVistoriasComLocal } from "@/lib/delivery-store";
+import { listarLocais } from "@/lib/empreendimentos-store";
+import type { Local } from "@/lib/empreendimentos";
+import { PainelVistorias } from "@/components/PainelVistorias";
 import { pendingCount, type Delivery } from "@/lib/delivery";
 import { filtrarVistorias, progressoVistoria, type FiltroPendencia } from "@/lib/modules";
 import { BuscaCard, CardItem, Etiqueta, Pagina, Pilulas, Vazio } from "@/components/modulos";
@@ -32,22 +35,36 @@ const FILTROS: { v: FiltroPendencia; l: string }[] = [
 ];
 
 function List({ emp }: { emp: Empreendimento }) {
-  const [list, setList] = useState<Delivery[]>([]),
+  const [vistorias, setVistorias] = useState<{ delivery: Delivery; localId: string | null }[]>([]),
+    [locais, setLocais] = useState<Local[]>([]),
     [q, setQ] = useState(""),
     [pendencia, setPendencia] = useState<FiltroPendencia>("todas"),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
   useEffect(() => {
-    listDeliveries(emp.id)
-      .then(setList)
+    Promise.all([listarVistoriasComLocal(emp.id), listarLocais([emp.id])])
+      .then(([vs, ls]) => {
+        setVistorias(vs);
+        setLocais(ls);
+      })
       .catch(() => setError("Não foi possível carregar as vistorias."))
       .finally(() => setLoading(false));
   }, [emp.id]);
+  const list = vistorias.map((v) => v.delivery);
   const lista = filtrarVistorias(list, { q, pendencia });
 
   return (
     <div>
-      <BuscaCard label="Buscar vistorias" placeholder="Torre, apartamento ou cliente" value={q} onChange={setQ} />
+      <div className="relative z-10 -mt-7">
+        {loading ? (
+          <p role="status" className="obra-card p-4 text-center text-obra-suave">Carregando painel…</p>
+        ) : (
+          !error && <PainelVistorias locais={locais} vistorias={vistorias} />
+        )}
+      </div>
+      <div className="mt-4">
+        <BuscaCard label="Buscar vistorias" placeholder="Torre, apartamento ou cliente" value={q} onChange={setQ} sobreposto={false} />
+      </div>
       <div className="mt-4 space-y-3">
         <Pilulas label="Filtrar por pendências" opcoes={FILTROS} valor={pendencia} onChange={setPendencia} />
       </div>

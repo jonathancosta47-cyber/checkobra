@@ -9,8 +9,11 @@ import { SeletorLocal } from "@/components/SeletorLocal";
 import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
 
 export const Route = createFileRoute("/vistorias/nova")({
-  validateSearch: (s: Record<string, unknown>): { id?: string } =>
-    typeof s["id"] === "string" ? { id: s["id"] } : {},
+  // ?id= edita uma vistoria; ?local= começa uma nova já na unidade escolhida (vindo do painel)
+  validateSearch: (s: Record<string, unknown>): { id?: string; local?: string } => ({
+    ...(typeof s["id"] === "string" ? { id: s["id"] } : {}),
+    ...(typeof s["local"] === "string" ? { local: s["local"] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Preencher vistoria de entrega — CheckObra" },
@@ -21,11 +24,11 @@ export const Route = createFileRoute("/vistorias/nova")({
 });
 
 function Page() {
-  const { id } = Route.useSearch();
+  const { id, local } = Route.useSearch();
   return (
     <main className="mx-auto max-w-3xl px-4 pb-6 pt-5">
       <h1 className="mb-5 text-3xl font-bold">{id ? "Editar vistoria" : "Nova vistoria de entrega"}</h1>
-      {id ? <Editar id={id} /> : <ComEmpreendimento>{(emp) => <Nova key={emp.id} emp={emp} />}</ComEmpreendimento>}
+      {id ? <Editar id={id} /> : <ComEmpreendimento>{(emp) => <Nova key={emp.id} emp={emp} localInicial={local} />}</ComEmpreendimento>}
     </main>
   );
 }
@@ -45,15 +48,35 @@ function Editar({ id }: { id: string }) {
 }
 
 // Nova: primeiro escolhe a unidade na estrutura; a identificação já vem preenchida.
-function Nova({ emp }: { emp: Empreendimento }) {
+function Nova({ emp, localInicial }: { emp: Empreendimento; localInicial?: string | undefined }) {
   const [locais, setLocais] = useState<Local[] | null>(null);
   const [inicio, setInicio] = useState<{ delivery: Delivery; vinculo: VinculoVistoria } | null>(null);
   const [erro, setErro] = useState("");
+  // começa a vistoria na unidade escolhida, com a identificação já preenchida
+  const iniciar = (ls: Local[], l: Local) => {
+    const caminho = caminhoDoLocal(ls, l.id);
+    const de = (t: Local["tipo"]) => caminho.find((c) => c.tipo === t)?.nome ?? "";
+    const d = newDelivery();
+    d.unit = {
+      ...d.unit,
+      development: emp.nome,
+      tower: de("torre"),
+      floor: de("pavimento").replace(/º pavimento$/, ""),
+      apartment: l.nome,
+    };
+    setInicio({ delivery: d, vinculo: { empreendimentoId: emp.id, localId: l.id } });
+  };
   useEffect(() => {
     listarLocais([emp.id])
-      .then(setLocais)
+      .then((ls) => {
+        setLocais(ls);
+        // vindo do painel (?local=): já abre o formulário daquela unidade
+        const escolhido = localInicial ? ls.find((l) => l.id === localInicial && (l.tipo === "unidade" || l.tipo === "area_comum")) : undefined;
+        if (escolhido) iniciar(ls, escolhido);
+      })
       .catch(() => setErro("Não foi possível carregar a estrutura do empreendimento."));
-  }, [emp.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emp.id, localInicial]);
 
   if (erro) return <p role="alert" className="obra-alerta-erro">{erro}</p>;
   if (!locais) return <p role="status">Carregando…</p>;
@@ -65,19 +88,7 @@ function Nova({ emp }: { emp: Empreendimento }) {
       <SeletorLocal
         locais={locais}
         aceita={["unidade", "area_comum"]}
-        onEscolher={(l) => {
-          const caminho = caminhoDoLocal(locais, l.id);
-          const de = (t: Local["tipo"]) => caminho.find((c) => c.tipo === t)?.nome ?? "";
-          const d = newDelivery();
-          d.unit = {
-            ...d.unit,
-            development: emp.nome,
-            tower: de("torre"),
-            floor: de("pavimento").replace(/º pavimento$/, ""),
-            apartment: l.nome,
-          };
-          setInicio({ delivery: d, vinculo: { empreendimentoId: emp.id, localId: l.id } });
-        }}
+        onEscolher={(l) => iniciar(locais, l)}
       />
     </section>
   );
