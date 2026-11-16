@@ -93,3 +93,17 @@ describe("editar empreendimento", () => {
     expect(await one(db, "select nome from empreendimentos where id = $1", [empA])).toEqual({ nome: "Vista Verde II" });
   });
 });
+
+describe("excluir várias unidades de uma vez (tela Estrutura)", () => {
+  it("engenheiro exclui as unidades selecionadas; inspetor e outra empresa não", async () => {
+    const pav = (await one<{ id: string }>(db, "select id from locais where empreendimento_id = $1 and tipo = 'pavimento' order by ordem desc limit 1", [empA])).id;
+    const ids = (await db.query<{ id: string }>("select id from locais where pai_id = $1 and tipo = 'unidade'", [pav])).rows.map((r) => r.id);
+    expect(ids.length).toBeGreaterThan(1);
+    await asUser(db, INSP_A, async (tx) => expect((await tx.query("delete from locais where id = any($1::uuid[])", [ids])).affectedRows).toBe(0));
+    await asUser(db, ADMIN_B, async (tx) => expect((await tx.query("delete from locais where id = any($1::uuid[])", [ids])).affectedRows).toBe(0));
+    await asUser(db, ENG_A, async (tx) => expect((await tx.query("delete from locais where id = any($1::uuid[])", [ids])).affectedRows).toBe(ids.length));
+    expect(await count(db, "select 1 from locais where id = any($1::uuid[])", [ids])).toBe(0);
+    // o pavimento continua lá
+    expect(await count(db, "select 1 from locais where id = $1", [pav])).toBe(1);
+  });
+});

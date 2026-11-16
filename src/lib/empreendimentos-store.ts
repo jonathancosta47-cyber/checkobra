@@ -100,6 +100,18 @@ export async function removerLocal(id: string) {
   return (data ?? []).length > 0;
 }
 
+// Remove vários locais de uma vez (em blocos, para a requisição não ficar grande demais).
+// Retorna quantos o banco apagou (o RLS recusa os que a pessoa não pode apagar).
+export async function removerLocais(ids: string[]) {
+  let apagados = 0;
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data, error } = await supabase.from("locais").delete().in("id", ids.slice(i, i + 100)).select("id");
+    falhou(error);
+    apagados += (data ?? []).length;
+  }
+  return apagados;
+}
+
 // ───────────── progresso (cartões da Início) ─────────────
 
 export async function progressoDosEmpreendimentos(ids: string[]) {

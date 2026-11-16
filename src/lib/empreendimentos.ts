@@ -131,3 +131,26 @@ export function progressoEntrega(totalUnidades: number, vistorias: { local_id: s
     pct: totalUnidades ? Math.round((Math.min(aprovadas.size, totalUnidades) / totalUnidades) * 100) : 0,
   };
 }
+
+// ───────────── seleção de várias unidades (tela Estrutura) ─────────────
+
+// Unidades dentro de um local (pavimento ou torre), em qualquer nível abaixo dele.
+export const unidadesDentro = (locais: Local[], id: string) => descendentes(locais, id).filter((l) => l.tipo === "unidade");
+
+// Quantas das unidades estão marcadas: todas, algumas ou nenhuma.
+export function estadoSelecao(ids: string[], selecionados: Set<string>): "todas" | "algumas" | "nenhuma" {
+  const marcadas = ids.filter((i) => selecionados.has(i)).length;
+  if (!ids.length || marcadas === 0) return "nenhuma";
+  return marcadas === ids.length ? "todas" : "algumas";
+}
+
+// Marca todas se ainda não estão todas marcadas; senão desmarca todas.
+export function alternarGrupo(ids: string[], selecionados: Set<string>): Set<string> {
+  const nova = new Set(selecionados);
+  const marcar = estadoSelecao(ids, selecionados) !== "todas";
+  for (const i of ids) {
+    if (marcar) nova.add(i);
+    else nova.delete(i);
+  }
+  return nova;
+}

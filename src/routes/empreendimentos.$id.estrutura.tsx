@@ -1,8 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Pencil, Plus, Trash2, X } from "lucide-react";
-import { adicionarLocal, listarLocais, removerLocal, renomearLocal } from "@/lib/empreendimentos-store";
-import { contarPorTipo, descendentes, filhosDe, proximaOrdem, sugerirNome, tiposFilhos, TIPO_ROTULO, type Local, type TipoLocal } from "@/lib/empreendimentos";
+import { Check, ChevronDown, ChevronRight, ListChecks, Pencil, Plus, Square, SquareCheck, SquareMinus, Trash2, X } from "lucide-react";
+import { adicionarLocal, listarLocais, removerLocal, removerLocais, renomearLocal } from "@/lib/empreendimentos-store";
+import {
+  alternarGrupo,
+  contarPorTipo,
+  descendentes,
+  estadoSelecao,
+  filhosDe,
+  proximaOrdem,
+  sugerirNome,
+  tiposFilhos,
+  TIPO_ROTULO,
+  unidadesDentro,
+  type Local,
+  type TipoLocal,
+} from "@/lib/empreendimentos";
 import { gerencia } from "@/lib/fvs-db";
 import { Pagina } from "@/components/modulos";
 import { usePerfil } from "@/components/PerfilContext";
@@ -26,6 +39,11 @@ function Estrutura() {
   const [removendo, setRemovendo] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [ocupado, setOcupado] = useState(false);
+  const [aviso, setAviso] = useState("");
+  // seleção de várias unidades para excluir de uma vez
+  const [selecionando, setSelecionando] = useState(false);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [confirmarLote, setConfirmarLote] = useState(false);
   const pode = gerencia(perfil.papel);
 
   useEffect(() => {
@@ -83,6 +101,71 @@ function Estrutura() {
     }, "Não foi possível remover.");
 
   const total = contarPorTipo(locais);
+  const todasUnidades = locais.filter((l) => l.tipo === "unidade").map((l) => l.id);
+
+  const marcar = (ids: string[]) => {
+    setSelecionados((s) => alternarGrupo(ids, s));
+    setConfirmarLote(false);
+  };
+  const sairDaSelecao = () => {
+    setSelecionando(false);
+    setSelecionados(new Set());
+    setConfirmarLote(false);
+  };
+  const excluirSelecionadas = () =>
+    executar(async () => {
+      const ids = [...selecionados];
+      const apagados = await removerLocais(ids);
+      if (!apagados) throw new Error("sem permissão");
+      const fora = new Set(ids);
+      setLocais((ls) => (ls ?? []).filter((x) => !fora.has(x.id)));
+      setAviso(
+        apagados === ids.length
+          ? `${apagados} ${apagados === 1 ? "unidade excluída" : "unidades excluídas"}.`
+          : `${apagados} de ${ids.length} unidades excluídas.`,
+      );
+      sairDaSelecao();
+    }, "Não foi possível excluir as unidades selecionadas.");
+
+  const caixa = (estado: "todas" | "algumas" | "nenhuma") =>
+    estado === "todas" ? (
+      <SquareCheck className="h-6 w-6 shrink-0 text-obra-laranja-texto" aria-hidden />
+    ) : estado === "algumas" ? (
+      <SquareMinus className="h-6 w-6 shrink-0 text-obra-laranja-texto" aria-hidden />
+    ) : (
+      <Square className="h-6 w-6 shrink-0 text-obra-suave" aria-hidden />
+    );
+
+  // modo seleção: unidade marca/desmarca; torre e pavimento marcam todas as unidades de dentro
+  const linhaSelecao = (l: Local) => {
+    const ids = l.tipo === "unidade" ? [l.id] : unidadesDentro(locais, l.id).map((u) => u.id);
+    if (!ids.length)
+      return (
+        <span className="min-w-0 flex-1 py-2">
+          <span className="block truncate font-bold text-obra-suave">{l.nome}</span>
+          <span className="block text-xs text-obra-suave">{TIPO_ROTULO[l.tipo]}</span>
+        </span>
+      );
+    const estado = estadoSelecao(ids, selecionados);
+    const marcadas = ids.filter((i) => selecionados.has(i)).length;
+    return (
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={estado === "todas" ? true : estado === "algumas" ? "mixed" : false}
+        className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl px-1 text-left hover:bg-obra-fundo"
+        onClick={() => marcar(ids)}
+      >
+        {caixa(estado)}
+        <span className="min-w-0">
+          <span className="block truncate font-bold text-obra-grafite">{l.nome}</span>
+          <span className="block text-xs text-obra-suave">
+            {l.tipo === "unidade" ? TIPO_ROTULO[l.tipo] : `Selecionar todas as unidades · ${marcadas}/${ids.length}`}
+          </span>
+        </span>
+      </button>
+    );
+  };
 
   // função (não componente): assim o campo de renomear não perde o foco a cada letra
   const no = (l: Local, nivel: number) => {
@@ -100,7 +183,9 @@ function Estrutura() {
           ) : (
             <span className="w-10 shrink-0" aria-hidden />
           )}
-          {editando?.id === l.id ? (
+          {selecionando ? (
+            linhaSelecao(l)
+          ) : editando?.id === l.id ? (
             <form className="flex min-w-0 flex-1 gap-1" onSubmit={(e) => { e.preventDefault(); void salvarNome(); }}>
               <input
                 className="obra-input min-h-11 py-1"
@@ -187,6 +272,76 @@ function Estrutura() {
         </section>
 
         {erro && <p role="alert" className="obra-alerta-erro">{erro}</p>}
+        {aviso && <p role="status" className="obra-aviso">{aviso}</p>}
+
+        {pode && !selecionando && total.unidade > 0 && (
+          <button
+            type="button"
+            className="obra-btn-claro w-full"
+            onClick={() => {
+              setSelecionando(true);
+              setAviso("");
+              setEditando(null);
+              setRemovendo(null);
+              // abre torres e pavimentos para mostrar as unidades
+              setAbertos(new Set(locais.filter((l) => l.tipo === "torre" || l.tipo === "pavimento").map((l) => l.id)));
+            }}
+          >
+            <ListChecks className="h-5 w-5" aria-hidden /> Selecionar unidades para excluir
+          </button>
+        )}
+
+        {selecionando && (
+          <section className="obra-card sticky top-2 z-20 space-y-3 border-l-4 border-obra-laranja p-4" aria-label="Unidades selecionadas">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-extrabold text-obra-grafite" aria-live="polite">
+                {selecionados.size} {selecionados.size === 1 ? "unidade selecionada" : "unidades selecionadas"}
+              </p>
+              <div className="flex gap-1">
+                <button type="button" className="obra-link" onClick={() => marcar(todasUnidades)}>
+                  {estadoSelecao(todasUnidades, selecionados) === "todas" ? "Desmarcar todas" : "Marcar todas"}
+                </button>
+                {selecionados.size > 0 && (
+                  <button
+                    type="button"
+                    className="obra-link"
+                    onClick={() => {
+                      setSelecionados(new Set());
+                      setConfirmarLote(false);
+                    }}
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+            </div>
+            {confirmarLote ? (
+              <div className="obra-alerta-erro space-y-2" role="alertdialog" aria-label="Confirmar exclusão">
+                <p>
+                  Excluir <strong>{selecionados.size}</strong> {selecionados.size === 1 ? "unidade" : "unidades"}? As FVS registradas nelas também são
+                  apagadas; OS e vistorias ficam sem local. Não dá para desfazer.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" className="obra-btn-claro" onClick={() => setConfirmarLote(false)}>
+                    Voltar
+                  </button>
+                  <button type="button" className="obra-btn bg-obra-nc text-white hover:bg-obra-nc" disabled={ocupado} onClick={() => void excluirSelecionadas()}>
+                    {ocupado ? "Excluindo…" : "Excluir"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className="obra-btn-claro" onClick={sairDaSelecao}>
+                  Cancelar
+                </button>
+                <button type="button" className="obra-btn bg-obra-nc text-white hover:bg-obra-nc" disabled={!selecionados.size} onClick={() => setConfirmarLote(true)}>
+                  <Trash2 className="h-5 w-5" aria-hidden /> Excluir selecionadas
+                </button>
+              </div>
+            )}
+          </section>
+        )}
 
         <section className="obra-card p-2" aria-label="Estrutura">
           {filhosDe(locais, null).length === 0 ? (
@@ -198,7 +353,7 @@ function Estrutura() {
           )}
         </section>
 
-        {pode && (
+        {pode && !selecionando && (
           <div className="grid grid-cols-2 gap-3">
             <button type="button" className="obra-btn-claro" disabled={ocupado} onClick={() => void adicionar(null, "torre")}>
               <Plus className="h-5 w-5" aria-hidden /> Torre
