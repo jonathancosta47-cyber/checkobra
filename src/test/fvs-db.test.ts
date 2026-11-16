@@ -8,6 +8,7 @@ import {
   motivoParaNaoConcluir,
   nomeDoCaminho,
   podeEditar,
+  podeExcluir,
   respostasDoModelo,
   type Local,
   type Resposta,
@@ -95,5 +96,15 @@ describe("assinaturas e nome do PDF", () => {
   it("gera um nome de arquivo limpo", () => {
     expect(nomePdfFvs(7, "Alvenaria de Vedação / Térreo")).toBe("FVS-0007-alvenaria-de-vedacao-terreo.pdf");
     expect(nomePdfFvs(12, "")).toBe("FVS-0012.pdf");
+  });
+});
+
+describe("quem pode excluir a FVS (espelha a regra do banco)", () => {
+  it("inspetor só a própria em rascunho; admin e engenheiro sempre", () => {
+    expect(podeExcluir({ id: "eu", papel: "inspetor" }, { status: "rascunho", inspetorId: "eu" })).toBe(true);
+    expect(podeExcluir({ id: "eu", papel: "inspetor" }, { status: "concluida", inspetorId: "eu" })).toBe(false);
+    expect(podeExcluir({ id: "eu", papel: "inspetor" }, { status: "rascunho", inspetorId: "outro" })).toBe(false);
+    expect(podeExcluir({ id: "x", papel: "engenheiro" }, { status: "concluida", inspetorId: "y" })).toBe(true);
+    expect(podeExcluir({ id: "x", papel: "admin_empresa" }, { status: "concluida", inspetorId: "y" })).toBe(true);
   });
 });

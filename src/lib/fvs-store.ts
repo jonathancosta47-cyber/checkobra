@@ -278,3 +278,23 @@ export async function baixarPdfSalvo(caminho: string): Promise<Blob> {
   falhou(error);
   return data!;
 }
+
+// ───────────── excluir ─────────────
+
+// Exclui a FVS com itens, fotos e PDF. Os arquivos saem primeiro: a regra do Storage
+// confere a FVS, que precisa existir para autorizar a remoção. Retorna false se o banco recusar.
+export async function excluirInspecao(id: string) {
+  const [fotos, insp] = await Promise.all([
+    supabase.from("fvs_fotos").select("storage_path").eq("inspecao_id", id),
+    supabase.from("inspecoes").select("pdf_path").eq("id", id).maybeSingle(),
+  ]);
+  falhou(fotos.error);
+  falhou(insp.error);
+  if (!insp.data) return false;
+  const caminhos = (fotos.data ?? []).map((f) => f.storage_path);
+  if (caminhos.length) await supabase.storage.from(BUCKET_FOTOS).remove(caminhos);
+  if (insp.data.pdf_path) await supabase.storage.from(BUCKET_PDFS).remove([insp.data.pdf_path]);
+  const { data, error } = await supabase.from("inspecoes").delete().eq("id", id).select("id");
+  falhou(error);
+  return (data ?? []).length > 0;
+}

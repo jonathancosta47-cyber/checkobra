@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Check, CheckCircle2, FileCheck2, Lock, Minus, RotateCcw, X } from "lucide-react";
+import { Camera, Check, CheckCircle2, FileCheck2, Lock, Minus, RotateCcw, Trash2, X } from "lucide-react";
 import {
   baixarPdfSalvo,
   concluirInspecao,
   definirEmpreiteiro,
   enviarFotoFvs,
+  excluirInspecao,
   lerInspecao,
   listarFotos,
   reabrirInspecao,
@@ -26,6 +27,7 @@ import {
   numeroFvs,
   PAPEL_ASSINATURA,
   podeEditar,
+  podeExcluir,
   progresso,
   RESULTADO_ROTULO,
   type Assinatura,
@@ -83,6 +85,8 @@ async function relatorioPronto(ref: React.RefObject<HTMLElement | null>) {
 
 function Ficha({ id }: { id: string }) {
   const perfil = usePerfil();
+  const navigate = useNavigate();
+  const [excluindo, setExcluindo] = useState(false);
   const [f, setF] = useState<Inspecao | null | undefined>(undefined);
   const [fotos, setFotos] = useState<FotoFvs[]>([]);
   const [aba, setAba] = useState<Aba>("preencher");
@@ -375,6 +379,33 @@ function Ficha({ id }: { id: string }) {
             }}
           >
             <RotateCcw className="h-5 w-5" aria-hidden /> Reabrir para correção
+          </button>
+        </section>
+      )}
+
+      {podeExcluir(perfil, f) && (
+        <section className="pt-2 text-center">
+          <button
+            type="button"
+            className="obra-link text-obra-nc decoration-obra-nc"
+            disabled={excluindo}
+            onClick={async () => {
+              const aviso =
+                f.status === "concluida"
+                  ? `Excluir a ${numeroFvs(f.numero)} concluída? Itens, fotos, assinaturas e o PDF salvo serão apagados. Não dá para desfazer.`
+                  : `Excluir a ${numeroFvs(f.numero)}? Itens, fotos e assinaturas serão apagados. Não dá para desfazer.`;
+              if (!confirm(aviso)) return;
+              setExcluindo(true);
+              setErro("");
+              const ok = await excluirInspecao(f.id).catch(() => false);
+              if (ok) navigate({ to: "/fvs", replace: true });
+              else {
+                setExcluindo(false);
+                setErro("Não foi possível excluir. Verifique a internet ou sua permissão.");
+              }
+            }}
+          >
+            <Trash2 className="mr-1 h-4 w-4" aria-hidden /> {excluindo ? "Excluindo…" : "Excluir FVS"}
           </button>
         </section>
       )}

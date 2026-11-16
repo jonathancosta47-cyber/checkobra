@@ -1,14 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Building2, Camera, ChevronRight, FileBarChart, Network, Trash2 } from "lucide-react";
-import { apagarEmpreendimento, enviarFoto, listarLocais, progressoDosEmpreendimentos, urlsDasFotos } from "@/lib/empreendimentos-store";
-import { contarPorTipo, type Local } from "@/lib/empreendimentos";
+import { Building2, Camera, ChevronRight, FileBarChart, Network, Pencil, Trash2 } from "lucide-react";
+import { apagarEmpreendimento, atualizarEmpreendimento, enviarFoto, listarLocais, progressoDosEmpreendimentos, urlsDasFotos } from "@/lib/empreendimentos-store";
+import { contarPorTipo, type Empreendimento, type Local } from "@/lib/empreendimentos";
 import { listarOS } from "@/lib/os-store";
 import { listDeliveries } from "@/lib/delivery-store";
 import { listarInspecoes } from "@/lib/fvs-store";
 import { gerencia } from "@/lib/fvs-db";
 import { contarPendencias, MODULOS, registros, type Modulo } from "@/lib/modules";
-import { ICONE_MODULO, Pagina, Progresso } from "@/components/modulos";
+import { Etiqueta, ICONE_MODULO, Pagina, Pilulas, Progresso } from "@/components/modulos";
 import { usePerfil } from "@/components/PerfilContext";
 import { useEmpreendimentos } from "@/components/EmpreendimentoContext";
 
@@ -16,6 +16,12 @@ export const Route = createFileRoute("/empreendimentos/$id/")({
   head: () => ({ meta: [{ title: "Empreendimento — CheckObra" }] }),
   component: Painel,
 });
+
+const STATUS: Record<Empreendimento["status"], { rotulo: string; tom: "ok" | "andamento" | "aberta" }> = {
+  ativa: { rotulo: "Em obra", tom: "andamento" },
+  pausada: { rotulo: "Pausado", tom: "aberta" },
+  concluida: { rotulo: "Concluído", tom: "ok" },
+};
 
 const TEXTO_PENDENCIA: Record<Modulo, (n: number) => string> = {
   os: (n) => (n === 1 ? "1 OS em aberto" : `${n} OS em aberto`),
@@ -36,6 +42,7 @@ function Painel() {
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [apagar, setApagar] = useState(false);
+  const [editando, setEditando] = useState(false);
   const [confirmacao, setConfirmacao] = useState("");
 
   // abrir o painel torna este o empreendimento atual
@@ -79,15 +86,34 @@ function Painel() {
             </div>
           )}
           <div className="space-y-3 p-4">
-            <div>
-              <h2 className="text-xl font-extrabold text-obra-grafite">{emp.nome}</h2>
-              <p className="text-sm text-obra-suave">{emp.endereco || "Sem endereço"}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-xl font-extrabold text-obra-grafite">{emp.nome}</h2>
+                <p className="text-sm text-obra-suave">{emp.endereco || "Sem endereço"}</p>
+              </div>
+              <Etiqueta tom={STATUS[emp.status].tom}>{STATUS[emp.status].rotulo}</Etiqueta>
             </div>
             <Progresso valor={prog?.pct ?? 0} />
             <p className="text-xs text-obra-suave">{prog ? `${prog.aprovadas} de ${prog.total} unidades entregues` : "Calculando progresso…"}</p>
             <p className="text-sm text-obra-grafite">
               {n.torre} {n.torre === 1 ? "torre" : "torres"} · {n.pavimento} pavimentos · {n.unidade} unidades · {n.area_comum} áreas comuns
             </p>
+            {podeGerenciar && !editando && (
+              <button type="button" className="obra-btn-claro w-full" onClick={() => setEditando(true)}>
+                <Pencil className="h-5 w-5" aria-hidden /> Editar dados
+              </button>
+            )}
+            {podeGerenciar && editando && (
+              <EditarDados
+                emp={emp}
+                onCancelar={() => setEditando(false)}
+                onSalvar={async (campos) => {
+                  if (!(await atualizarEmpreendimento(emp.id, campos))) throw new Error("sem permissão");
+                  await recarregar();
+                  setEditando(false);
+                }}
+              />
+            )}
             {podeGerenciar && (
               <label className="obra-btn-claro w-full cursor-pointer">
                 <Camera className="h-5 w-5" aria-hidden /> {enviando ? "Enviando…" : emp.foto_path ? "Trocar foto" : "Adicionar foto"}
@@ -192,5 +218,66 @@ function Painel() {
         )}
       </div>
     </Pagina>
+  );
+}
+
+// Editar nome, endereço e status do empreendimento (admin e engenheiro; o banco também confere).
+function EditarDados({
+  emp,
+  onCancelar,
+  onSalvar,
+}: {
+  emp: Empreendimento;
+  onCancelar: () => void;
+  onSalvar: (campos: Pick<Empreendimento, "nome" | "endereco" | "status">) => Promise<void>;
+}) {
+  const [nome, setNome] = useState(emp.nome);
+  const [endereco, setEndereco] = useState(emp.endereco);
+  const [status, setStatus] = useState<Empreendimento["status"]>(emp.status);
+  const [erro, setErro] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      className="space-y-4 rounded-2xl bg-obra-fundo p-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!nome.trim()) return setErro("Informe o nome do empreendimento.");
+        setBusy(true);
+        setErro("");
+        try {
+          await onSalvar({ nome: nome.trim(), endereco: endereco.trim(), status });
+        } catch {
+          setErro("Não foi possível salvar. Verifique a internet e tente de novo.");
+          setBusy(false);
+        }
+      }}
+    >
+      <label className="block">
+        <span className="obra-label">Nome *</span>
+        <input className="obra-input" value={nome} onChange={(e) => setNome(e.target.value)} />
+      </label>
+      <label className="block">
+        <span className="obra-label">Endereço</span>
+        <input className="obra-input" value={endereco} onChange={(e) => setEndereco(e.target.value)} autoComplete="street-address" />
+      </label>
+      <div>
+        <span className="obra-label">Status</span>
+        <Pilulas
+          label="Status do empreendimento"
+          opcoes={[
+            { v: "ativa" as const, l: "Em obra" },
+            { v: "pausada" as const, l: "Pausado" },
+            { v: "concluida" as const, l: "Concluído" },
+          ]}
+          valor={status}
+          onChange={setStatus}
+        />
+      </div>
+      {erro && <p role="alert" className="obra-alerta-erro">{erro}</p>}
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" className="obra-btn-claro" onClick={onCancelar}>Cancelar</button>
+        <button type="submit" className="obra-btn" disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
+      </div>
+    </form>
   );
 }

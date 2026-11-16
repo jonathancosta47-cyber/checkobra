@@ -139,4 +139,8 @@ export function motivoParaNaoConcluir(
 export const podeEditar = (perfil: Pick<Perfil, "id" | "papel">, i: Pick<InspecaoResumo, "status" | "inspetorId">) =>
   gerencia(perfil.papel) || (i.inspetorId === perfil.id && i.status === "rascunho");
 
+// Quem pode excluir (a mesma regra do banco): admin e engenheiro sempre; o inspetor só a própria, em rascunho.
+export const podeExcluir = (perfil: Pick<Perfil, "id" | "papel">, i: Pick<InspecaoResumo, "status" | "inspetorId">) =>
+  gerencia(perfil.papel) || (i.inspetorId === perfil.id && i.status === "rascunho");
+
 export const numeroFvs = (n: number) => `FVS #${String(n).padStart(4, "0")}`;
