@@ -34,7 +34,7 @@ const vistoria = (p: Partial<Delivery> & { itens?: DeliveryItem[] }): Delivery =
 const fvs = (p: Partial<InspecaoResumo>): InspecaoResumo => ({
   id: "f", numero: 1, status: "concluida", criadaEm: "2026-11-03T12:00:00", concluidaEm: null, inspetorId: "u",
   empreendimentoId: "o", obra: "Edifício Jardins", localId: "l", local: "Torre A", modelo: "Alvenaria", modeloVersao: 1, modeloServico: "",
-  empreiteiroId: null, total: 0, respondidos: 0, nc: 0, ...p,
+  empreiteiroId: null, pdfPath: null, pdfGeradoEm: null, total: 0, respondidos: 0, nc: 0, ...p,
 });
 
 describe("botão + e módulo atual", () => {

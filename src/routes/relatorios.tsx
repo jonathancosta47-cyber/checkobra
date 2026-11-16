@@ -5,7 +5,8 @@ import type { ServiceOrder } from "@/lib/orders";
 import { listarOS } from "@/lib/os-store";
 import type { Empreendimento } from "@/lib/empreendimentos";
 import { ComEmpreendimento } from "@/components/EmpreendimentoContext";
-import { listarInspecoes } from "@/lib/fvs-store";
+import { baixarPdfSalvo, listarInspecoes } from "@/lib/fvs-store";
+import { baixarArquivo } from "@/lib/pdf";
 import type { InspecaoResumo } from "@/lib/fvs-db";
 import { listDeliveries } from "@/lib/delivery-store";
 import type { Delivery } from "@/lib/delivery";
@@ -116,8 +117,8 @@ function ListaRelatorios({ emp }: { emp: Empreendimento }) {
           {linhas.map((r) => {
             const Icone = ICONE_MODULO[r.modulo];
             return (
-              <li key={`${r.modulo}-${r.id}`}>
-                <LinkRegistro modulo={r.modulo} id={r.id} className="flex min-h-16 items-center gap-3 px-4 py-3 transition hover:bg-obra-fundo">
+              <li key={`${r.modulo}-${r.id}`} className="flex items-center">
+                <LinkRegistro modulo={r.modulo} id={r.id} className="flex min-h-16 min-w-0 flex-1 items-center gap-3 px-4 py-3 transition hover:bg-obra-fundo">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-obra-bege">
                     <Icone className="h-5 w-5 text-obra-grafite" aria-hidden />
                   </span>
@@ -129,15 +130,44 @@ function ListaRelatorios({ emp }: { emp: Empreendimento }) {
                     </span>
                   </span>
                   <Etiqueta tom={r.pendente ? "nc" : "ok"}>{r.situacao}</Etiqueta>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-obra-laranja text-obra-grafite" title="Abrir para baixar o PDF">
-                    <FileDown className="h-5 w-5" aria-label="Abrir relatório e baixar PDF" />
-                  </span>
+                  {!r.pdfPath && (
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-obra-bege text-obra-grafite" title="Abrir para gerar o PDF">
+                      <FileDown className="h-5 w-5" aria-label="Abrir relatório e gerar PDF" />
+                    </span>
+                  )}
                 </LinkRegistro>
+                {r.pdfPath && <BaixarPdfSalvo caminho={r.pdfPath} nome={`${r.titulo.split(" · ")[0]?.replace(/\W+/g, "-") ?? "FVS"}.pdf`} />}
               </li>
             );
           })}
         </ul>
       )}
     </>
+  );
+}
+
+// FVS concluída: baixa direto o PDF oficial guardado (sem abrir a ficha).
+function BaixarPdfSalvo({ caminho, nome }: { caminho: string; nome: string }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      className="mr-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-obra-laranja text-obra-grafite disabled:opacity-60"
+      disabled={busy}
+      aria-label="Baixar PDF salvo"
+      title="Baixar PDF salvo"
+      onClick={async () => {
+        setBusy(true);
+        try {
+          baixarArquivo(await baixarPdfSalvo(caminho), nome);
+        } catch {
+          alert("Não foi possível baixar o PDF. Verifique a internet.");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <FileDown className="h-5 w-5" aria-hidden />
+    </button>
   );
 }

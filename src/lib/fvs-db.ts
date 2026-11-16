@@ -36,14 +36,58 @@ export interface InspecaoResumo {
   modeloVersao: number;
   modeloServico: string;
   empreiteiroId: string | null;
+  pdfPath: string | null;
+  pdfGeradoEm: string | null;
   total: number;
   respondidos: number;
   nc: number;
 }
 
+export interface Assinatura {
+  papel: "inspetor" | "empreiteiro";
+  nome: string;
+  imagem: string | null; // data URL do desenho
+}
+
+export interface FotoFvs {
+  id: string;
+  respostaId: string;
+  storagePath: string;
+  url: string; // link temporário para mostrar
+}
+
 export interface Inspecao extends InspecaoResumo {
   observacoes: string;
   respostas: Resposta[];
+  assinaturas: Assinatura[];
+  inspetorNome: string;
+  empreiteiroNome: string;
+  empreiteiroCnpj: string | null;
+}
+
+export const PAPEL_ASSINATURA: Record<Assinatura["papel"], string> = {
+  inspetor: "Inspetor responsável",
+  empreiteiro: "Empreiteiro responsável",
+};
+
+// Garante as duas assinaturas (inspetor e empreiteiro), mantendo o que já foi assinado.
+export function assinaturasCompletas(salvas: Assinatura[], nomes: { inspetor: string; empreiteiro: string }): Assinatura[] {
+  return (["inspetor", "empreiteiro"] as const).map((papel) => {
+    const a = salvas.find((x) => x.papel === papel);
+    return { papel, nome: a?.nome || nomes[papel], imagem: a?.imagem ?? null };
+  });
+}
+
+// Nome do arquivo do PDF: FVS-0007-alvenaria-de-vedacao.pdf
+export function nomePdfFvs(numero: number, modelo: string) {
+  const slug = modelo
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+  return `FVS-${String(numero).padStart(4, "0")}${slug ? `-${slug}` : ""}.pdf`;
 }
 
 export const PAPEL_ROTULO: Record<Papel, string> = {
@@ -73,12 +117,21 @@ export function contarRespostas(rs: Pick<Resposta, "resultado">[]) {
 export const progresso = (i: Pick<InspecaoResumo, "total" | "respondidos">) =>
   i.total ? Math.round((i.respondidos / i.total) * 100) : 0;
 
-// Para concluir: todos os itens respondidos e toda NC com observação explicando o problema.
-export function motivoParaNaoConcluir(rs: Resposta[]): string | null {
+// Para concluir (as mesmas regras que o banco confere): todos os itens respondidos, toda NC descrita,
+// foto nos itens que exigem (quando C ou NC) e a assinatura do inspetor.
+export function motivoParaNaoConcluir(
+  rs: Resposta[],
+  fotosPorResposta: Record<string, number> = {},
+  assinaturas: Pick<Assinatura, "papel" | "imagem">[] | null = null,
+): string | null {
   const faltam = rs.filter((r) => r.resultado === null).length;
   if (faltam) return faltam === 1 ? "Falta responder 1 item." : `Faltam responder ${faltam} itens.`;
   const ncSemObs = rs.filter((r) => r.resultado === "NC" && !r.observacao.trim()).length;
   if (ncSemObs) return ncSemObs === 1 ? "Descreva o problema do item não conforme." : `Descreva o problema dos ${ncSemObs} itens não conformes.`;
+  const semFoto = rs.filter((r) => r.exige_foto && (r.resultado === "C" || r.resultado === "NC") && !fotosPorResposta[r.id]).length;
+  if (semFoto) return semFoto === 1 ? "1 item exige foto e está sem foto." : `${semFoto} itens exigem foto e estão sem foto.`;
+  if (assinaturas && !assinaturas.some((a) => a.papel === "inspetor" && a.imagem?.startsWith("data:image/")))
+    return "Falta a assinatura do inspetor.";
   return null;
 }
 

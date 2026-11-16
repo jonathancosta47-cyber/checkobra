@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  assinaturasCompletas,
   caminhoDoLocal,
+  nomePdfFvs,
   contarRespostas,
   filhosDe,
   motivoParaNaoConcluir,
@@ -64,5 +66,34 @@ describe("quem pode editar (espelha a regra do banco)", () => {
     expect(podeEditar({ id: "outro", papel: "inspetor" }, rascunho)).toBe(false);
     expect(podeEditar({ id: "outro", papel: "engenheiro" }, concluida)).toBe(true);
     expect(podeEditar({ id: "outro", papel: "admin_empresa" }, concluida)).toBe(true);
+  });
+});
+
+describe("concluir: fotos exigidas e assinatura (mesmas regras do banco)", () => {
+  const ok = [{ papel: "inspetor" as const, imagem: "data:image/png;base64,AAA" }];
+  it("item que exige foto, marcado C ou NC, precisa de foto; N/A não", () => {
+    const r1 = resp({ id: "r1", exige_foto: true, resultado: "C" });
+    const r2 = resp({ id: "r2", exige_foto: true, resultado: "NA" });
+    expect(motivoParaNaoConcluir([r1, r2], {}, ok)).toBe("1 item exige foto e está sem foto.");
+    expect(motivoParaNaoConcluir([r1, r2], { r1: 2 }, ok)).toBeNull();
+  });
+  it("sem assinatura do inspetor não conclui", () => {
+    const r = resp({ resultado: "C" });
+    expect(motivoParaNaoConcluir([r], {}, [])).toBe("Falta a assinatura do inspetor.");
+    expect(motivoParaNaoConcluir([r], {}, [{ papel: "empreiteiro", imagem: "data:image/png;base64,A" }])).toBe("Falta a assinatura do inspetor.");
+    expect(motivoParaNaoConcluir([r], {}, ok)).toBeNull();
+  });
+});
+
+describe("assinaturas e nome do PDF", () => {
+  it("sempre inspetor e empreiteiro, mantendo o que já foi assinado", () => {
+    expect(assinaturasCompletas([{ papel: "empreiteiro", nome: "", imagem: "data:x" }], { inspetor: "Ana", empreiteiro: "Silva Ltda" })).toEqual([
+      { papel: "inspetor", nome: "Ana", imagem: null },
+      { papel: "empreiteiro", nome: "Silva Ltda", imagem: "data:x" },
+    ]);
+  });
+  it("gera um nome de arquivo limpo", () => {
+    expect(nomePdfFvs(7, "Alvenaria de Vedação / Térreo")).toBe("FVS-0007-alvenaria-de-vedacao-terreo.pdf");
+    expect(nomePdfFvs(12, "")).toBe("FVS-0012.pdf");
   });
 });

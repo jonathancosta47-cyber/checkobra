@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Download, Printer, Copy, Trash2, Pencil } from "lucide-react";
+import { Copy, Trash2, Pencil } from "lucide-react";
 import { DeliveryAccess } from "@/components/DeliveryAccess";
 import { DeliveryReport } from "@/components/DeliveryReport";
 import { Button } from "@/components/ui/button";
 import { readDelivery, removeDelivery } from "@/lib/delivery-store";
 import { summaryText, type Delivery } from "@/lib/delivery";
-import { exportElementToPdf } from "@/lib/pdf";
+import { gerarPdf } from "@/lib/pdf";
+import { AcoesPdf } from "@/components/AcoesPdf";
 export const Route = createFileRoute("/vistorias/$id")({
   head: () => ({
     meta: [
@@ -39,7 +40,6 @@ function Page() {
 function Report({ id }: { id: string }) {
   const [d, setD] = useState<Delivery | null>(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
     [copied, setCopied] = useState(false);
   const ref = useRef<HTMLElement>(null),
     nav = useNavigate();
@@ -57,32 +57,6 @@ function Report({ id }: { id: string }) {
             <Pencil />
             Editar
           </Link>
-        </Button>
-        <Button variant="outline" onClick={() => window.print()}>
-          <Printer />
-          Imprimir
-        </Button>
-        <Button
-          disabled={busy}
-          onClick={async () => {
-            if (!ref.current) return;
-            setBusy(true);
-            setError("");
-            try {
-              await exportElementToPdf(
-                ref.current,
-                `Entrega-${d.unit.apartment.replace(/[^\w-]/g, "") || id.slice(0, 8)}.pdf`,
-                [d.unit.development, d.unit.tower, d.unit.apartment && `Apto ${d.unit.apartment}`].filter(Boolean).join(" — "),
-              );
-            } catch {
-              setError("Não foi possível gerar o PDF. Tente novamente.");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          <Download />
-          {busy ? "Gerando…" : "Baixar PDF"}
         </Button>
         <Button
           variant="outline"
@@ -119,6 +93,18 @@ function Report({ id }: { id: string }) {
             {error}
           </p>
         )}
+      </div>
+      <div className="mb-5">
+        <AcoesPdf
+          nome={`Entrega-${d.unit.apartment.replace(/[^\w-]/g, "") || id.slice(0, 8)}.pdf`}
+          titulo={`Vistoria de entrega — ${d.unit.development} ${d.unit.apartment}`.trim()}
+          gerar={async () => {
+            if (!ref.current) throw new Error("relatório indisponível");
+            return gerarPdf(ref.current, {
+              obra: [d.unit.development, d.unit.tower, d.unit.apartment && `Apto ${d.unit.apartment}`].filter(Boolean).join(" — "),
+            });
+          }}
+        />
       </div>
       <DeliveryReport ref={ref} delivery={d} />
     </>

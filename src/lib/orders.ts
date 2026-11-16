@@ -58,26 +58,8 @@ export const statusLabel: Record<OrderStatus, string> = {
   concluida: "Fechada",
 };
 
-export function compressImage(file: File, max = 1200, type = "image/jpeg"): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = img.width * scale;
-        c.height = img.height * scale;
-        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL(type, 0.7));
-      };
-      img.onerror = reject;
-      img.src = reader.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+// Compressão de imagens agora fica em lib/imagens (reexportada aqui para quem já importava daqui).
+export { compressImage } from "./imagens";
 
 export interface Company { name: string; logo: string | null; logo2?: string | null; logo3?: string | null; info: string }
 const CKEY = "os-manutencao:company";

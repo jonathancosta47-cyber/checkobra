@@ -111,6 +111,7 @@ export interface Registro {
   data: string; // ISO
   pendente: boolean;
   situacao: string;
+  pdfPath?: string | null; // PDF oficial salvo (FVS concluída)
 }
 
 const num = (n: number) => `#${String(n).padStart(4, "0")}`;
@@ -147,6 +148,7 @@ export function registros(os: ServiceOrder[], vistorias: Delivery[], fvs: Inspec
       data: i.criadaEm,
       pendente: fvsPendente(i),
       situacao: i.nc ? `${i.nc} NC` : i.status === "rascunho" ? "Em andamento" : "Conforme",
+      pdfPath: i.pdfPath,
     })),
   ];
 }
